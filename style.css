@@ -77,6 +77,21 @@ body {
   color: #B8A9C9;
 }
 
+.mood-bar {
+  width: 200px;
+  height: 6px;
+  border-radius: 8px;
+  background: #E8E0F0;
+  margin: 1.5rem auto 0;
+  overflow: hidden;
+}
+
+.mood-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.5s ease, background 0.5s ease;
+}
+
 .food-menu {
   margin-top: 1.5rem;
   display: flex;

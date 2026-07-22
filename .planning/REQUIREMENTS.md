@@ -18,8 +18,8 @@
 
 ### Настроение
 
-- [ ] **PET-06**: Система настроения — питомец грустит/радуется со временем
-- [ ] **PET-07**: Взаимодействие поднимает настроение, бездействие — опускает
+- [x] **PET-06**: Система настроения — питомец грустит/радуется со временем
+- [x] **PET-07**: Взаимодействие поднимает настроение, бездействие — опускает
 
 ### Звуки
 
@@ -32,7 +32,7 @@
 
 - [ ] **PET-12**: Антистресс-дизайн (мягкие пастельные цвета, скругления)
 - [x] **PET-13**: Кнопки/UI для кормления (выбор еды)
-- [ ] **PET-14**: Индикатор настроения (визуальный статус)
+- [x] **PET-14**: Индикатор настроения (визуальный статус)
 
 ## v2 Requirements
 
@@ -62,15 +62,15 @@ Deferred to future version.
 | PET-03 | Phase 1 | ✓ Done |
 | PET-04 | Phase 2 | ✓ Done |
 | PET-05 | Phase 2 | ✓ Done |
-| PET-06 | Phase 3 | Pending |
-| PET-07 | Phase 3 | Pending |
+| PET-06 | Phase 3 | ✓ Done |
+| PET-07 | Phase 3 | ✓ Done |
 | PET-08 | Phase 4 | Pending |
 | PET-09 | Phase 4 | Pending |
 | PET-10 | Phase 4 | Pending |
 | PET-11 | Phase 4 | Pending |
 | PET-12 | Phase 5 | Pending |
 | PET-13 | Phase 2 | ✓ Done |
-| PET-14 | Phase 3 | Pending |
+| PET-14 | Phase 3 | ✓ Done |
 
 **Coverage:**
 - v1 requirements: 14 total

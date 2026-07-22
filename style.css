@@ -77,6 +77,46 @@ body {
   color: #B8A9C9;
 }
 
+.food-menu {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.food-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: #FFE4E1;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.food-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: #FFB6C1;
+}
+
+.food-btn:active {
+  transform: scale(0.95);
+}
+
+.pet--eating {
+  animation: eat 300ms ease-in-out;
+}
+
+.pet--purring {
+  animation: purr 200ms ease-in-out infinite;
+}
+
 @keyframes breathe {
   0%, 100% {
     transform: scale(1);
@@ -84,6 +124,18 @@ body {
   50% {
     transform: scale(1.05);
   }
+}
+
+@keyframes eat {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.9); }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes purr {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
 }
 
 @keyframes bounce {
@@ -107,6 +159,14 @@ body {
   }
 
   .pet--happy {
+    animation: none;
+  }
+
+  .pet--eating {
+    animation: none;
+  }
+
+  .pet--purring {
     animation: none;
   }
 

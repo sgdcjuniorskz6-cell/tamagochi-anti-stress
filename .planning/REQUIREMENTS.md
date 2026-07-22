@@ -13,8 +13,8 @@
 ### Реакции
 
 - [x] **PET-03**: Реакция на клик — смех/прыжок с CSS-анимацией
-- [ ] **PET-04**: Механика кормления — выбор еды, питомец ест с анимацией
-- [ ] **PET-05**: Поглаживание (mousedown/move) — питомец мурлычет, меняет表情
+- [x] **PET-04**: Механика кормления — выбор еды, питомец ест с анимацией
+- [x] **PET-05**: Поглаживание (mousedown/move) — питомец мурлычет, меняет表情
 
 ### Настроение
 
@@ -31,7 +31,7 @@
 ### UI/UX
 
 - [ ] **PET-12**: Антистресс-дизайн (мягкие пастельные цвета, скругления)
-- [ ] **PET-13**: Кнопки/UI для кормления (выбор еды)
+- [x] **PET-13**: Кнопки/UI для кормления (выбор еды)
 - [ ] **PET-14**: Индикатор настроения (визуальный статус)
 
 ## v2 Requirements
@@ -60,8 +60,8 @@ Deferred to future version.
 | PET-01 | Phase 1 | ✓ Done |
 | PET-02 | Phase 1 | ✓ Done |
 | PET-03 | Phase 1 | ✓ Done |
-| PET-04 | Phase 2 | Pending |
-| PET-05 | Phase 2 | Pending |
+| PET-04 | Phase 2 | ✓ Done |
+| PET-05 | Phase 2 | ✓ Done |
 | PET-06 | Phase 3 | Pending |
 | PET-07 | Phase 3 | Pending |
 | PET-08 | Phase 4 | Pending |
@@ -69,7 +69,7 @@ Deferred to future version.
 | PET-10 | Phase 4 | Pending |
 | PET-11 | Phase 4 | Pending |
 | PET-12 | Phase 5 | Pending |
-| PET-13 | Phase 2 | Pending |
+| PET-13 | Phase 2 | ✓ Done |
 | PET-14 | Phase 3 | Pending |
 
 **Coverage:**

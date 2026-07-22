@@ -23,10 +23,10 @@
 
 ### Звуки
 
-- [ ] **PET-08**: Звук реакции на клик (Web Audio API)
-- [ ] **PET-09**: Звук кормления
-- [ ] **PET-10**: Звук поглаживания
-- [ ] **PET-11**: Фоновый звук/тишина в зависимости от настроения
+- [x] **PET-08**: Звук реакции на клик (Web Audio API)
+- [x] **PET-09**: Звук кормления
+- [x] **PET-10**: Звук поглаживания
+- [x] **PET-11**: Фоновый звук/тишина в зависимости от настроения
 
 ### UI/UX
 
@@ -64,10 +64,10 @@ Deferred to future version.
 | PET-05 | Phase 2 | ✓ Done |
 | PET-06 | Phase 3 | ✓ Done |
 | PET-07 | Phase 3 | ✓ Done |
-| PET-08 | Phase 4 | Pending |
-| PET-09 | Phase 4 | Pending |
-| PET-10 | Phase 4 | Pending |
-| PET-11 | Phase 4 | Pending |
+| PET-08 | Phase 4 | ✓ Done |
+| PET-09 | Phase 4 | ✓ Done |
+| PET-10 | Phase 4 | ✓ Done |
+| PET-11 | Phase 4 | ✓ Done |
 | PET-12 | Phase 5 | Pending |
 | PET-13 | Phase 2 | ✓ Done |
 | PET-14 | Phase 3 | ✓ Done |

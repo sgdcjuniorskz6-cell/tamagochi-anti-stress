@@ -21,6 +21,135 @@ document.addEventListener('DOMContentLoaded', () => {
   let mood = MOOD_INITIAL;
   let timeout;
   let moodInterval;
+  let audioCtx = null;
+  let purrNodes = null;
+  let ambientNodes = null;
+
+  const getAudioContext = () => {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  };
+
+  const playTone = (freq, gainVal, duration, startTime) => {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, startTime);
+    gain.gain.setValueAtTime(gainVal, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  };
+
+  const playClickSound = () => {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+  };
+
+  const playEatSound = () => {
+    const now = getAudioContext().currentTime;
+    playTone(120, 0.3, 0.08, now);
+    playTone(100, 0.25, 0.08, now + 0.12);
+  };
+
+  const startPurrSound = () => {
+    if (purrNodes) return;
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(50, now);
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(70, now);
+
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(5, now);
+    lfoGain.gain.setValueAtTime(0.08, now);
+
+    gain.gain.setValueAtTime(0.15, now);
+
+    lfo.connect(lfoGain).connect(gain.gain);
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    lfo.start(now);
+
+    purrNodes = { osc1, osc2, gain, lfo, lfoGain };
+  };
+
+  const stopPurrSound = () => {
+    if (!purrNodes) return;
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    purrNodes.gain.gain.setValueAtTime(purrNodes.gain.gain.value, now);
+    purrNodes.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    purrNodes.osc1.stop(now + 0.2);
+    purrNodes.osc2.stop(now + 0.2);
+    purrNodes.lfo.stop(now + 0.2);
+    purrNodes = null;
+  };
+
+  const startAmbient = () => {
+    if (ambientNodes) return;
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(1800, now);
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(2200, now);
+
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.04, now + 1);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+
+    ambientNodes = { osc1, osc2, gain };
+  };
+
+  const stopAmbient = () => {
+    if (!ambientNodes) return;
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    ambientNodes.gain.gain.setValueAtTime(ambientNodes.gain.gain.value, now);
+    ambientNodes.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    ambientNodes.osc1.stop(now + 0.5);
+    ambientNodes.osc2.stop(now + 0.5);
+    ambientNodes = null;
+  };
 
   const lerpColor = (a, b, t) => {
     const ah = parseInt(a.slice(1), 16), ar = ah >> 16, ag = (ah >> 8) & 255, ab = ah & 255;
@@ -48,6 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const applyMood = () => {
     updateMoodBar(mood);
+    if (mood > 70) {
+      startAmbient();
+    } else {
+      stopAmbient();
+    }
     const isIdle = pet.classList.contains('pet--idle');
     const isAnimating = pet.classList.contains('pet--happy') || pet.classList.contains('pet--eating') || pet.classList.contains('pet--purring');
     if (isIdle && !isAnimating) {
@@ -76,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('click', () => {
     clearTimeout(timeout);
+    playClickSound();
     boostMood(MOOD_CLICK_BOOST);
     pet.classList.remove('pet--idle', 'pet--purring');
     pet.classList.add('pet--happy');
@@ -91,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.food-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       clearTimeout(timeout);
+      playEatSound();
       boostMood(MOOD_FEED_BOOST);
       pet.classList.remove('pet--idle', 'pet--happy', 'pet--purring');
       pet.classList.add('pet--eating');
@@ -111,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
   pet.addEventListener('mousedown', () => {
     clearTimeout(timeout);
     if (pet.classList.contains('pet--eating')) return;
+    startPurrSound();
     boostMood(MOOD_PET_BOOST);
     pet.classList.remove('pet--idle', 'pet--happy');
     pet.classList.add('pet--purring');
@@ -119,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const stopPetting = () => {
     if (pet.classList.contains('pet--eating')) return;
+    stopPurrSound();
     pet.classList.remove('pet--purring');
     pet.classList.add('pet--idle');
     pet.textContent = getIdleEmoji();

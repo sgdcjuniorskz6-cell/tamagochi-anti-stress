@@ -2,14 +2,14 @@
 
 **Project:** Интерактивный тамагочи-антистресс
 **Last active phase:** Phase 1 (planned)
-**Current status:** Phase 1 planned, ready for execution
+**Current status:** Phase 1 complete
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-07-22)
 
 **Core value:** Расслабление и радость от взаимодействия — питомец откликается на заботу живыми реакциями.
-**Current focus:** Phase 1 — База + Реакция на клик
+**Current focus:** Phase 2 — Кормление + Поглаживание
 
 ## Active Context
 
@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 
 | Phase | Status | Requirements |
 |-------|--------|--------------|
-| 1 — База + Реакция на клик | Planned | PET-01, PET-02, PET-03 |
+| 1 — База + Реакция на клик | **Complete** | PET-01 ✓, PET-02 ✓, PET-03 ✓ |
 | 2 — Кормление + Поглаживание | Pending | PET-04, PET-05, PET-13 |
 | 3 — Система настроения | Pending | PET-06, PET-07, PET-14 |
 | 4 — Звуки | Pending | PET-08, PET-09, PET-10, PET-11 |
 | 5 — Полировка дизайна | Pending | PET-12 |
 
-**Next:** `/gsd-execute-phase 1` to start execution
+**Next:** `/gsd-execute-phase 2` to start execution

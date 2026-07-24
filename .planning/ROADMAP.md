@@ -67,7 +67,21 @@
 
 ---
 
-**Total phases:** 5
-**Total requirements:** 14
+## Phase 6 — Мини-игра: мячик
+
+**Цель:** Питомец играет с мячиком — бросок, ловля (или промах), звуки.
+
+- Кнопка «Бросить мяч» с ⚽
+- Анимация полёта мяча
+- Рандом: 70% ловит / 30% мимо
+- Реакции питомца (😎 / 😕)
+
+**Requirements:** PET-16
+
+---
+
+**Total phases:** 6
+**Total v1 requirements:** 14
+**Total v2 requirements:** 4 (1 done, 3 pending)
 ---
 *Last updated: 2026-07-22 after initialization*

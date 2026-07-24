@@ -39,7 +39,7 @@
 Deferred to future version.
 
 - **PET-15**: Несколько видов питомцев на выбор
-- **PET-16**: Мини-игры (бросание мячика, ловля)
+- [x] **PET-16**: Мини-игра (бросание мячика, ловля)
 - **PET-17**: Статистика за сессию
 - **PET-18**: Смена темы оформления (день/ночь)
 
@@ -71,6 +71,7 @@ Deferred to future version.
 | PET-12 | Phase 5 | ✓ Done |
 | PET-13 | Phase 2 | ✓ Done |
 | PET-14 | Phase 3 | ✓ Done |
+| PET-16 | Phase 6 | ✓ Done |
 
 **Coverage:**
 - v1 requirements: 14 total

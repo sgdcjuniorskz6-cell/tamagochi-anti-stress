@@ -36,12 +36,16 @@
 
 ## v2 Requirements
 
-Deferred to future version.
-
 - **PET-15**: Несколько видов питомцев на выбор
 - [x] **PET-16**: Мини-игра (бросание мячика, ловля)
 - **PET-17**: Статистика за сессию
 - **PET-18**: Смена темы оформления (день/ночь)
+
+## v3 Requirements
+
+- [x] **PET-19**: Система голода — питомец хочет есть, кормление насыщает
+- [x] **PET-20**: Система сна — питомец устаёт и засыпает при бездействии
+- [x] **PET-21**: Пробуждение — взаимодействие будит питомца
 
 ## Out of Scope
 
@@ -72,11 +76,14 @@ Deferred to future version.
 | PET-13 | Phase 2 | ✓ Done |
 | PET-14 | Phase 3 | ✓ Done |
 | PET-16 | Phase 6 | ✓ Done |
+| PET-19 | Phase 7 | ✓ Done |
+| PET-20 | Phase 7 | ✓ Done |
+| PET-21 | Phase 7 | ✓ Done |
 
 **Coverage:**
-- v1 requirements: 14 total
-- Mapped to phases: 14
-- Unmapped: 0 ✓
+- v1 requirements: 14 total — all ✓
+- v2/v3 requirements: 7 total (3 done, 4 pending)
+- Total: 21 (17 done, 4 pending)
 
 ---
 *Requirements defined: 2026-07-22*

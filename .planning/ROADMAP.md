@@ -80,8 +80,20 @@
 
 ---
 
-**Total phases:** 6
-**Total v1 requirements:** 14
-**Total v2 requirements:** 4 (1 done, 3 pending)
+## Phase 7 — Голод и Сон
+
+**Цель:** Питомец испытывает голод и усталость — нужно кормить и давать отдыхать.
+
+- Шкала голода (0–100, растёт каждые 6s)
+- Шкала энергии (100–0, падает каждые 10s)
+- При голоде >70: 😫, при усталости <30: 🥱, <10: 😴💤
+- Взаимодействие будит и насыщает
+
+**Requirements:** PET-19, PET-20, PET-21
+
+---
+
+**Total phases:** 7
+**Total requirements:** 21 (17 done, 4 pending)
 ---
 *Last updated: 2026-07-22 after initialization*

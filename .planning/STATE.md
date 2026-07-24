@@ -2,14 +2,14 @@
 
 **Project:** Интерактивный тамагочи-антистресс
 **Last active phase:** Phase 1 (planned)
-**Current status:** v2 started — Phase 6 complete
+**Current status:** Phase 7 complete
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-07-22)
 
 **Core value:** Расслабление и радость от взаимодействия — питомец откликается на заботу живыми реакциями.
-**Current focus:** v2 — PET-16 done, next PET-15/17/18
+**Current focus:** Голод и Сон готовы. Осталось: PET-15, PET-17, PET-18
 
 ## Active Context
 
@@ -28,5 +28,6 @@ See: .planning/PROJECT.md (updated 2026-07-22)
 | 4 — Звуки | **Complete** | PET-08 ✓, PET-09 ✓, PET-10 ✓, PET-11 ✓ |
 | 5 — Полировка дизайна | **Complete** | PET-12 ✓ |
 | 6 — Мини-игра мячик | **Complete** | PET-16 ✓ |
+| 7 — Голод и Сон | **Complete** | PET-19 ✓, PET-20 ✓, PET-21 ✓ |
 
-**🎉 All v1 + first v2 requirement complete!**
+**🎉 v1 + v2/3 progress: 17/21 requirements complete**

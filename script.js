@@ -264,4 +264,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('mouseup', stopPetting);
   pet.addEventListener('mouseleave', stopPetting);
+
+  const ball = document.getElementById('ball');
+  const playBtn = document.getElementById('play-btn');
+  const PROUD_EMOJI = '😎';
+  const SURPRISED_EMOJI = '😕';
+  const MOOD_PLAY_BOOST = 10;
+
+  const playThrowSound = () => {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+    osc.frequency.exponentialRampToValueAtTime(400, now + 0.2);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  };
+
+  const playCatchSound = () => {
+    const now = getAudioContext().currentTime;
+    playTone(600, 0.2, 0.08, now);
+    playTone(800, 0.2, 0.08, now + 0.1);
+    playTone(1000, 0.2, 0.08, now + 0.2);
+  };
+
+  const playMissSound = () => {
+    const now = getAudioContext().currentTime;
+    playTone(300, 0.15, 0.15, now);
+    playTone(200, 0.1, 0.2, now + 0.15);
+  };
+
+  const resetAfterThrow = () => {
+    pet.classList.remove('pet--catch');
+    pet.classList.add('pet--idle');
+    pet.textContent = getIdleEmoji();
+    playBtn.disabled = false;
+  };
+
+  playBtn.addEventListener('click', () => {
+    clearTimeout(timeout);
+    if (playBtn.disabled) return;
+    playBtn.disabled = true;
+    pet.classList.remove('pet--idle', 'pet--happy', 'pet--eating', 'pet--purring');
+
+    playThrowSound();
+    ball.classList.add('ball--flying');
+
+    timeout = setTimeout(() => {
+      ball.classList.remove('ball--flying');
+      const caught = Math.random() < 0.7;
+
+      if (caught) {
+        boostMood(MOOD_PLAY_BOOST);
+        pet.classList.add('pet--catch');
+        pet.textContent = PROUD_EMOJI;
+        playCatchSound();
+      } else {
+        pet.textContent = SURPRISED_EMOJI;
+        playMissSound();
+      }
+
+      timeout = setTimeout(resetAfterThrow, 1200);
+    }, 500);
+  });
 });

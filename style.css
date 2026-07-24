@@ -32,6 +32,7 @@ body {
   width: 100%;
   max-width: 400px;
   padding: 0 20px;
+  position: relative;
 }
 
 .title {
@@ -153,6 +154,53 @@ body {
   animation: purr 200ms ease-in-out infinite;
 }
 
+.pet--catch {
+  animation: catchReaction 300ms ease-out;
+}
+
+.play-btn {
+  margin-top: 1rem;
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background: #FFE4E1;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.play-btn:hover {
+  transform: scale(1.05);
+  border-color: #FFB6C1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.play-btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.ball {
+  position: absolute;
+  font-size: 2rem;
+  left: 10%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  will-change: transform, opacity;
+}
+
+.ball--flying {
+  opacity: 1;
+  animation: throwBall 500ms ease-in forwards;
+}
+
 @keyframes breathe {
   0%, 100% {
     transform: scale(1);
@@ -172,6 +220,30 @@ body {
 @keyframes purr {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.03); }
+}
+
+@keyframes throwBall {
+  0% {
+    left: 10%;
+    transform: translateY(-50%) scale(0.5);
+    opacity: 1;
+  }
+  40% {
+    left: 50%;
+    transform: translateY(-80%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    left: 60%;
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes catchReaction {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
 }
 
 @keyframes floatCard {
@@ -215,6 +287,10 @@ body {
     animation: none;
   }
 
+  .ball--flying {
+    animation: none;
+  }
+
   .pet-card {
     transition: none;
   }
@@ -247,6 +323,15 @@ body {
 
   .hint {
     font-size: 0.8rem;
+  }
+
+  .play-btn {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+
+  .ball {
+    font-size: 1.5rem;
   }
 }
 

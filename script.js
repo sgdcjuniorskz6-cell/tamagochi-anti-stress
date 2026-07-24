@@ -18,9 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const MOOD_FEED_BOOST = 15;
   const MOOD_PET_BOOST = 5;
 
+  const hungerFill = document.getElementById('hunger-fill');
+  const sleepFill = document.getElementById('sleep-fill');
+
   let mood = MOOD_INITIAL;
+  let hunger = 0;
+  let energy = 100;
   let timeout;
   let moodInterval;
+  let hungerInterval;
+  let energyInterval;
   let audioCtx = null;
   let purrNodes = null;
   let ambientNodes = null;
@@ -163,10 +170,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const SAD_COLOR = '#B8A9C9';
   const HAPPY_COLOR = '#FFB6C1';
 
+  const HUNGRY_EMOJI = '😫';
+  const SLEEPY_EMOJI = '🥱';
+  const SLEEPING_EMOJI = '😴';
+
   const getIdleEmoji = () => {
     if (mood > 70) return HAPPY_EMOJI;
     if (mood > 30) return NEUTRAL_EMOJI;
     return SAD_EMOJI;
+  };
+
+  const getStateEmoji = () => {
+    if (energy < 10) return SLEEPING_EMOJI;
+    if (energy < 30) return SLEEPY_EMOJI;
+    if (hunger > 70) return HUNGRY_EMOJI;
+    return getIdleEmoji();
   };
 
   const updateMoodBar = (value) => {
@@ -175,17 +193,38 @@ document.addEventListener('DOMContentLoaded', () => {
     moodFill.style.background = lerpColor(SAD_COLOR, HAPPY_COLOR, value / MOOD_MAX);
   };
 
+  const updateHungerBar = () => {
+    hungerFill.style.width = hunger + '%';
+  };
+
+  const updateSleepBar = () => {
+    sleepFill.style.width = (energy) + '%';
+  };
+
+  const wakeUp = () => {
+    energy = 100;
+    updateSleepBar();
+    pet.classList.remove('pet--sleeping');
+  };
+
   const applyMood = () => {
+    const isSleeping = energy < 10;
     updateMoodBar(mood);
     if (mood > 70) {
       startAmbient();
     } else {
       stopAmbient();
     }
+    if (isSleeping) {
+      pet.classList.remove('pet--idle');
+      pet.classList.add('pet--sleeping');
+      pet.textContent = SLEEPING_EMOJI;
+      return;
+    }
     const isIdle = pet.classList.contains('pet--idle');
     const isAnimating = pet.classList.contains('pet--happy') || pet.classList.contains('pet--eating') || pet.classList.contains('pet--purring');
     if (isIdle && !isAnimating) {
-      pet.textContent = getIdleEmoji();
+      pet.textContent = getStateEmoji();
     }
   };
 
@@ -199,17 +238,41 @@ document.addEventListener('DOMContentLoaded', () => {
   const startMoodDecay = () => {
     clearInterval(moodInterval);
     moodInterval = setInterval(() => {
+      if (energy < 10) return;
       mood = Math.max(MOOD_MIN, mood - 1);
       applyMood();
     }, MOOD_DECAY_INTERVAL);
   };
 
+  const startHungerTimer = () => {
+    hungerInterval = setInterval(() => {
+      hunger = Math.min(100, hunger + 1);
+      updateHungerBar();
+      if (hunger > 70 && document.querySelector('.pet--idle')) {
+        pet.textContent = getStateEmoji();
+      }
+    }, 6000);
+  };
+
+  const startEnergyTimer = () => {
+    energyInterval = setInterval(() => {
+      energy = Math.max(0, energy - 1);
+      updateSleepBar();
+      applyMood();
+    }, 10000);
+  };
+
   pet.classList.add('pet--idle');
   updateMoodBar(mood);
+  updateHungerBar();
+  updateSleepBar();
   startMoodDecay();
+  startHungerTimer();
+  startEnergyTimer();
 
   pet.addEventListener('click', () => {
     clearTimeout(timeout);
+    wakeUp();
     playClickSound();
     boostMood(MOOD_CLICK_BOOST);
     pet.classList.remove('pet--idle', 'pet--purring');
@@ -219,13 +282,16 @@ document.addEventListener('DOMContentLoaded', () => {
     timeout = setTimeout(() => {
       pet.classList.remove('pet--happy');
       pet.classList.add('pet--idle');
-      pet.textContent = getIdleEmoji();
+      pet.textContent = getStateEmoji();
     }, ANIMATION_DURATION);
   });
 
   document.querySelectorAll('.food-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       clearTimeout(timeout);
+      wakeUp();
+      hunger = 0;
+      updateHungerBar();
       playEatSound();
       boostMood(MOOD_FEED_BOOST);
       pet.classList.remove('pet--idle', 'pet--happy', 'pet--purring');
@@ -238,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pet.classList.add('pet--idle');
 
         timeout = setTimeout(() => {
-          pet.textContent = getIdleEmoji();
+          pet.textContent = getStateEmoji();
         }, FULL_DURATION);
       }, FEED_DURATION);
     });
@@ -247,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
   pet.addEventListener('mousedown', () => {
     clearTimeout(timeout);
     if (pet.classList.contains('pet--eating')) return;
+    wakeUp();
     startPurrSound();
     boostMood(MOOD_PET_BOOST);
     pet.classList.remove('pet--idle', 'pet--happy');
@@ -259,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stopPurrSound();
     pet.classList.remove('pet--purring');
     pet.classList.add('pet--idle');
-    pet.textContent = getIdleEmoji();
+    pet.textContent = getStateEmoji();
   };
 
   pet.addEventListener('mouseup', stopPetting);
@@ -303,13 +370,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetAfterThrow = () => {
     pet.classList.remove('pet--catch');
     pet.classList.add('pet--idle');
-    pet.textContent = getIdleEmoji();
+    pet.textContent = getStateEmoji();
     playBtn.disabled = false;
   };
 
   playBtn.addEventListener('click', () => {
     clearTimeout(timeout);
     if (playBtn.disabled) return;
+    wakeUp();
     playBtn.disabled = true;
     pet.classList.remove('pet--idle', 'pet--happy', 'pet--eating', 'pet--purring');
 

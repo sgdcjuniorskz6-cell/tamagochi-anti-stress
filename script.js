@@ -181,8 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const getStateEmoji = () => {
-    if (energy < 10) return SLEEPING_EMOJI;
-    if (energy < 30) return SLEEPY_EMOJI;
+    if (energy < 20) return SLEEPING_EMOJI;
+    if (energy < 40) return SLEEPY_EMOJI;
     if (hunger > 70) return HUNGRY_EMOJI;
     return getIdleEmoji();
   };
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const applyMood = () => {
-    const isSleeping = energy < 10;
+    const isSleeping = energy < 20;
     updateMoodBar(mood);
     if (mood > 70) {
       startAmbient();
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const startMoodDecay = () => {
     clearInterval(moodInterval);
     moodInterval = setInterval(() => {
-      if (energy < 10) return;
+      if (energy < 20) return;
       mood = Math.max(MOOD_MIN, mood - 1);
       applyMood();
     }, MOOD_DECAY_INTERVAL);
@@ -374,19 +374,10 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.disabled = false;
   };
 
-  const playHint = document.querySelector('.hint');
-  const originalHint = playHint.textContent;
-
   playBtn.addEventListener('click', () => {
     clearTimeout(timeout);
     if (playBtn.disabled) return;
-    if (hunger < 15) {
-      playHint.textContent = '😴 Питомец слишком сыт, чтобы играть';
-      clearTimeout(timeout);
-      timeout = setTimeout(() => { playHint.textContent = originalHint; }, 2000);
-      return;
-    }
-    if (energy < 10) wakeUp();
+    if (energy < 20) wakeUp();
     energy = Math.max(0, energy - 15);
     updateSleepBar();
     hunger = Math.min(100, hunger + 10);

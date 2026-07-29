@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('click', () => {
     clearTimeout(timeout);
-    if (isSleepBlocked) return;
+    if (isSleepBlocked || isGameActive) return;
     wakeUp();
     playClickSound();
     boostMood(MOOD_CLICK_BOOST);
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.food-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       clearTimeout(timeout);
-      if (isSleepBlocked) return;
+      if (isSleepBlocked || isGameActive) return;
       wakeUp();
       hunger = 0;
       updateHungerBar();
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('mousedown', () => {
     clearTimeout(timeout);
-    if (isSleepBlocked) return;
+    if (isSleepBlocked || isGameActive) return;
     if (pet.classList.contains('pet--eating')) return;
     wakeUp();
     startPurrSound();
@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
   playBtn.addEventListener('click', () => {
     clearTimeout(playTimeout);
     if (playBtn.disabled) return;
-    if (isSleepBlocked) return;
+    if (isSleepBlocked || isGameActive) return;
     if (energy < 20) wakeUp();
     energy = Math.max(0, energy - 15);
     updateSleepBar();
@@ -455,5 +455,279 @@ document.addEventListener('DOMContentLoaded', () => {
 
       playTimeout = setTimeout(resetAfterThrow, 1200);
     }, 500);
+  });
+
+  // ========== MINI-GAMES ==========
+  const gameArena = document.getElementById('game-arena');
+  const gameBtns = document.querySelectorAll('.game-btn');
+  let isGameActive = false;
+  let gameTimer = null;
+
+  const stopGame = () => {
+    isGameActive = false;
+    clearTimeout(gameTimer);
+    gameArena.innerHTML = '';
+    gameArena.classList.remove('game-arena--active');
+    gameBtns.forEach(b => b.disabled = false);
+  };
+
+  const playPopSound = () => {
+    const now = getAudioContext().currentTime;
+    playTone(800, 0.12, 0.05, now);
+    playTone(1000, 0.08, 0.04, now + 0.04);
+  };
+
+  const playCorrectSound = () => {
+    const now = getAudioContext().currentTime;
+    playTone(660, 0.15, 0.08, now);
+    playTone(880, 0.15, 0.08, now + 0.08);
+  };
+
+  const playWrongSound = () => {
+    const now = getAudioContext().currentTime;
+    playTone(200, 0.12, 0.2, now);
+  };
+
+  const playWinSound = () => {
+    const now = getAudioContext().currentTime;
+    playTone(523, 0.15, 0.1, now);
+    playTone(659, 0.15, 0.1, now + 0.1);
+    playTone(784, 0.15, 0.15, now + 0.2);
+  };
+
+  // === BUBBLES ===
+  const startBubbles = () => {
+    gameArena.classList.add('game-arena--active');
+    gameBtns.forEach(b => b.disabled = true);
+    gameArena.innerHTML = '<div class="game-hud">🫧 Лопай пузырьки! <span class="game-score">0</span></div>';
+    let score = 0;
+    const maxBubbles = 8;
+    let spawnInterval;
+
+    const popBubble = (el) => {
+      if (!el.parentNode) return;
+      score++;
+      const scoreEl = gameArena.querySelector('.game-score');
+      if (scoreEl) scoreEl.textContent = score;
+      playPopSound();
+      el.style.animation = 'bubblePop 300ms ease-out forwards';
+      setTimeout(() => el.remove(), 300);
+    };
+
+    const spawnBubble = () => {
+      const arena = gameArena;
+      if (!arena.classList.contains('game-arena--active')) return;
+      if (arena.querySelectorAll('.bubble').length >= maxBubbles) return;
+      const el = document.createElement('div');
+      el.className = 'bubble';
+      const size = 1.5 + Math.random() * 1.5;
+      el.style.fontSize = size + 'rem';
+      el.style.left = (5 + Math.random() * 75) + '%';
+      el.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+      el.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+      const emojis = ['🫧', '💎', '🌟', '✨', '💫'];
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.addEventListener('click', () => popBubble(el));
+      arena.appendChild(el);
+      el.addEventListener('animationend', () => { if (el.parentNode) el.remove(); });
+    };
+
+    for (let i = 0; i < 5; i++) spawnBubble();
+    spawnInterval = setInterval(spawnBubble, 1000);
+
+    gameTimer = setTimeout(() => {
+      clearInterval(spawnInterval);
+      gameArena.querySelectorAll('.bubble').forEach(el => el.remove());
+      const boost = Math.min(30, score * 2);
+      boostMood(boost);
+      playWinSound();
+      gameArena.innerHTML = `<div class="game-result">🫧 +${score} очков! Настроение +${boost}</div>`;
+      setTimeout(stopGame, 2000);
+    }, 15000);
+  };
+
+  // === MATH ===
+  const startMath = () => {
+    gameArena.classList.add('game-arena--active');
+    gameBtns.forEach(b => b.disabled = true);
+    let qIndex = 0;
+    let correct = 0;
+    const total = 10;
+
+    const showQuestion = () => {
+      if (qIndex >= total) {
+        const boost = Math.max(0, Math.min(50, correct * 5 - (total - correct) * 2));
+        boostMood(boost);
+        playWinSound();
+        gameArena.innerHTML = `<div class="game-result">🔢 ${correct}/${total}. Настроение +${boost}</div>`;
+        setTimeout(stopGame, 2000);
+        return;
+      }
+      const a = Math.floor(Math.random() * 10) + 1;
+      const b = Math.floor(Math.random() * 10) + 1;
+      const op = Math.random() > 0.5 ? '+' : '-';
+      const ans = op === '+' ? a + b : a - b;
+      const opts = [ans];
+      let attempts = 0;
+      while (opts.length < 4 && attempts < 50) {
+        attempts++;
+        const fake = ans + Math.floor(Math.random() * 12) - 6;
+        if (!opts.includes(fake) && fake >= 0 && fake <= 20) opts.push(fake);
+      }
+      opts.sort(() => Math.random() - 0.5);
+
+      gameArena.innerHTML = `
+        <div class="game-hud">🔢 Вопрос ${qIndex+1}/${total}</div>
+        <div class="math-question">${a} ${op} ${b} = ?</div>
+        <div class="math-options">
+          ${opts.map(o => `<button class="math-btn">${o}</button>`).join('')}
+        </div>
+      `;
+
+      let answered = false;
+      gameArena.querySelectorAll('.math-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (answered) return;
+          answered = true;
+          const isCorrect = parseInt(btn.textContent) === ans;
+          if (isCorrect) { correct++; playCorrectSound(); }
+          else playWrongSound();
+          btn.classList.add(isCorrect ? 'math-btn--correct' : 'math-btn--wrong');
+          gameArena.querySelectorAll('.math-btn').forEach(b => b.disabled = true);
+          qIndex++;
+          setTimeout(showQuestion, 800);
+        });
+      });
+    };
+    showQuestion();
+  };
+
+  // === CATCH FOOD ===
+  const startCatch = () => {
+    gameArena.classList.add('game-arena--active');
+    gameBtns.forEach(b => b.disabled = true);
+    gameArena.innerHTML = '<div class="game-hud">🍎 Лови еду! <span class="game-score">0</span></div>';
+    let score = 0;
+    let speed = 2200;
+    let spawnInterval;
+    const foods = ['🍎', '🍕', '🍰', '🍩', '🍇', '🍓'];
+
+    const spawnFood = () => {
+      const arena = gameArena;
+      if (!arena.classList.contains('game-arena--active')) return;
+      const el = document.createElement('div');
+      el.className = 'falling-food';
+      el.textContent = foods[Math.floor(Math.random() * foods.length)];
+      el.style.left = (5 + Math.random() * 75) + '%';
+      el.style.animationDuration = (speed / 1000) + 's';
+      el.addEventListener('click', () => {
+        if (!el.parentNode) return;
+        score++;
+        const scoreEl = gameArena.querySelector('.game-score');
+        if (scoreEl) scoreEl.textContent = score;
+        playPopSound();
+        el.style.animation = 'none';
+        el.textContent = '💥';
+        el.style.fontSize = '1.2rem';
+        el.style.top = el.offsetTop + 'px';
+        setTimeout(() => el.remove(), 300);
+      });
+      el.addEventListener('animationend', () => { if (el.parentNode) el.remove(); });
+      arena.appendChild(el);
+    };
+
+    spawnFood();
+    spawnInterval = setInterval(() => {
+      spawnFood();
+      speed = Math.max(600, speed - 80);
+    }, 1000);
+
+    gameTimer = setTimeout(() => {
+      clearInterval(spawnInterval);
+      gameArena.querySelectorAll('.falling-food').forEach(el => el.remove());
+      const boost = Math.min(30, score * 3);
+      boostMood(boost);
+      playWinSound();
+      gameArena.innerHTML = `<div class="game-result">🍎 +${score} поймано! Настроение +${boost}</div>`;
+      setTimeout(stopGame, 2000);
+    }, 15000);
+  };
+
+  // === MEMORY ===
+  const startMemory = () => {
+    gameArena.classList.add('game-arena--active');
+    gameBtns.forEach(b => b.disabled = true);
+    const emojis = ['🐶', '🐱', '🐰', '🐼', '🦊', '🐸', '🦄', '🐲'];
+    const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+    let flipped = [];
+    let matched = 0;
+    let locked = false;
+
+    const render = () => {
+      gameArena.innerHTML = `
+        <div class="game-hud">🃏 Найди пары! <span class="memory-matches">${matched}</span>/8</div>
+        <div class="memory-grid">
+          ${cards.map((emoji, i) => `
+            <div class="memory-card" data-i="${i}">
+              <div class="memory-card-inner">
+                <div class="memory-front">?</div>
+                <div class="memory-back">${emoji}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      gameArena.querySelectorAll('.memory-card').forEach(card => {
+        card.addEventListener('click', () => {
+          if (locked) return;
+          if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+          card.classList.add('flipped');
+          flipped.push(card);
+          if (flipped.length === 2) {
+            locked = true;
+            const [a, b] = flipped;
+            const match = cards[a.dataset.i] === cards[b.dataset.i];
+            if (match) {
+              matched++;
+              gameArena.querySelector('.memory-matches').textContent = matched;
+              a.classList.add('matched');
+              b.classList.add('matched');
+              flipped = [];
+              locked = false;
+              playCorrectSound();
+              if (matched === 8) {
+                boostMood(30);
+                playWinSound();
+                gameArena.innerHTML = `<div class="game-result">🃏 Все пары найдены! Настроение +30</div>`;
+                setTimeout(stopGame, 2000);
+              }
+            } else {
+              playWrongSound();
+              setTimeout(() => {
+                a.classList.remove('flipped');
+                b.classList.remove('flipped');
+                flipped = [];
+                locked = false;
+              }, 700);
+            }
+          }
+        });
+      });
+    };
+    render();
+  };
+
+  gameBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (isGameActive || isSleepBlocked) return;
+      stopGame();
+      isGameActive = true;
+      const game = btn.dataset.game;
+      if (game === 'bubbles') startBubbles();
+      else if (game === 'math') startMath();
+      else if (game === 'catch') startCatch();
+      else if (game === 'memory') startMemory();
+    });
   });
 });

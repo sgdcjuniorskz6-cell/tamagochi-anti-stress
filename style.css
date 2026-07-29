@@ -313,6 +313,244 @@ body {
   letter-spacing: 0.04em;
 }
 
+.games-section {
+  margin-top: 1rem;
+}
+
+.games-menu {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.game-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: #FFE4E1;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.game-btn:hover {
+  transform: scale(1.15);
+  border-color: #A0C4E8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.game-btn:active {
+  transform: scale(0.95);
+}
+
+.game-btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.game-arena {
+  position: relative;
+  margin-top: 0.75rem;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+  border-radius: 16px;
+  background: rgba(255, 228, 225, 0.5);
+}
+
+.game-arena--active {
+  height: 240px;
+  border: 1px solid rgba(160, 196, 232, 0.3);
+}
+
+.game-hud {
+  font-size: 0.8rem;
+  color: #8B7BA7;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.game-score {
+  font-weight: 600;
+  color: #A0C4E8;
+}
+
+.game-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 0.9rem;
+  color: #8B7BA7;
+  padding: 20px;
+  text-align: center;
+}
+
+/* === BUBBLES === */
+.bubble {
+  position: absolute;
+  bottom: -30px;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  animation: bubbleFloat linear forwards;
+  z-index: 5;
+}
+
+@keyframes bubbleFloat {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-280px) translateX(var(--drift));
+    opacity: 0;
+  }
+}
+
+@keyframes bubblePop {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* === MATH === */
+.math-question {
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: #6B5B87;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.math-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 12px;
+}
+
+.math-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: #FFE4E1;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.math-btn:hover {
+  border-color: #A0C4E8;
+  transform: scale(1.1);
+}
+
+.math-btn--correct {
+  background: #C8E6C9 !important;
+  border-color: #81C784 !important;
+}
+
+.math-btn--wrong {
+  background: #FFCDD2 !important;
+  border-color: #E57373 !important;
+}
+
+.math-btn:disabled {
+  opacity: 0.6;
+}
+
+/* === CATCH FOOD === */
+.falling-food {
+  position: absolute;
+  top: -30px;
+  font-size: 1.8rem;
+  cursor: pointer;
+  user-select: none;
+  animation: foodFall linear forwards;
+  z-index: 5;
+}
+
+@keyframes foodFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(280px) rotate(360deg);
+    opacity: 0.4;
+  }
+}
+
+/* === MEMORY === */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px 12px;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.memory-card {
+  aspect-ratio: 1;
+  perspective: 400px;
+  cursor: pointer;
+}
+
+.memory-card-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s ease;
+  transform-style: preserve-3d;
+  border-radius: 10px;
+}
+
+.memory-card.flipped .memory-card-inner {
+  transform: rotateY(180deg);
+}
+
+.memory-front, .memory-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  font-size: 1.4rem;
+}
+
+.memory-front {
+  background: #FFE4E1;
+  color: #B8A9C9;
+  font-size: 1rem;
+}
+
+.memory-back {
+  background: #E8F0FE;
+  transform: rotateY(180deg);
+}
+
+.memory-card.matched .memory-card-inner {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.memory-matches {
+  font-weight: 600;
+  color: #A0C4E8;
+}
+
 @keyframes bounce {
   0% {
     transform: translateY(0) scale(1);

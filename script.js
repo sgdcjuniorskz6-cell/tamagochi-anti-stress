@@ -692,10 +692,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (flipped.length === 2) {
             locked = true;
             const [a, b] = flipped;
-            const match = cards[a.dataset.i] === cards[b.dataset.i];
+            const match = a !== b && a.dataset.i != null && b.dataset.i != null && cards[a.dataset.i] === cards[b.dataset.i];
             if (match) {
               matched++;
-              gameArena.querySelector('.memory-matches').textContent = matched;
+              const mm = gameArena.querySelector('.memory-matches');
+              if (mm) mm.textContent = matched + '/8';
               a.classList.add('matched');
               b.classList.add('matched');
               flipped = [];
@@ -710,8 +711,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
               playWrongSound();
               setTimeout(() => {
-                a.classList.remove('flipped');
-                b.classList.remove('flipped');
+                if (a.parentNode) a.classList.remove('flipped');
+                if (b.parentNode) b.classList.remove('flipped');
                 flipped = [];
                 locked = false;
               }, 700);

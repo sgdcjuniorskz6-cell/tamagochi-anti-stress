@@ -374,9 +374,18 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.disabled = false;
   };
 
+  const playHint = document.querySelector('.hint');
+  const originalHint = playHint.textContent;
+
   playBtn.addEventListener('click', () => {
     clearTimeout(timeout);
     if (playBtn.disabled) return;
+    if (hunger < 15) {
+      playHint.textContent = '😴 Питомец слишком сыт, чтобы играть';
+      clearTimeout(timeout);
+      timeout = setTimeout(() => { playHint.textContent = originalHint; }, 2000);
+      return;
+    }
     if (energy < 10) wakeUp();
     energy = Math.max(0, energy - 15);
     updateSleepBar();

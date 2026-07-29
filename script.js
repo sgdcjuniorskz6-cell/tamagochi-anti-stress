@@ -380,6 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (energy < 10) wakeUp();
     energy = Math.max(0, energy - 15);
     updateSleepBar();
+    hunger = Math.min(100, hunger + 10);
+    updateHungerBar();
     playBtn.disabled = true;
     pet.classList.remove('pet--idle', 'pet--happy', 'pet--eating', 'pet--purring');
 

@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let energy = 100;
   let timeout;
   let playTimeout;
+  let isSleepBlocked = false;
+  let sleepTimeout;
+  let sleepCountdown;
+  const SLEEP_DURATION = 15000;
   let moodInterval;
   let hungerInterval;
   let energyInterval;
@@ -208,6 +212,50 @@ document.addEventListener('DOMContentLoaded', () => {
     pet.classList.remove('pet--sleeping');
   };
 
+  const goToSleep = () => {
+    if (isSleepBlocked) return;
+    isSleepBlocked = true;
+    clearTimeout(timeout);
+    clearTimeout(playTimeout);
+
+    pet.classList.remove('pet--idle', 'pet--happy', 'pet--eating', 'pet--purring');
+    pet.classList.add('pet--sleeping');
+    pet.textContent = SLEEPING_EMOJI;
+
+    document.querySelectorAll('.food-btn').forEach(b => b.disabled = true);
+    document.getElementById('play-btn').disabled = true;
+
+    const timerEl = document.getElementById('sleep-timer');
+    let remaining = SLEEP_DURATION / 1000;
+    const tick = () => {
+      remaining--;
+      timerEl.textContent = remaining > 0 ? `😴 ${remaining}s` : '';
+    };
+    sleepCountdown = setInterval(tick, 1000);
+
+    sleepTimeout = setTimeout(() => {
+      clearInterval(sleepCountdown);
+      wakeUpFromSleep();
+    }, SLEEP_DURATION);
+  };
+
+  const wakeUpFromSleep = () => {
+    clearTimeout(sleepTimeout);
+    clearInterval(sleepCountdown);
+    if (!isSleepBlocked) return;
+    isSleepBlocked = false;
+    energy = 100;
+    updateSleepBar();
+
+    document.getElementById('sleep-timer').textContent = '';
+    pet.classList.remove('pet--sleeping');
+    pet.classList.add('pet--idle');
+    pet.textContent = getStateEmoji();
+
+    document.querySelectorAll('.food-btn').forEach(b => b.disabled = false);
+    document.getElementById('play-btn').disabled = false;
+  };
+
   const applyMood = () => {
     const isSleeping = energy < 20;
     updateMoodBar(mood);
@@ -217,9 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
       stopAmbient();
     }
     if (isSleeping) {
-      pet.classList.remove('pet--idle');
-      pet.classList.add('pet--sleeping');
-      pet.textContent = SLEEPING_EMOJI;
+      goToSleep();
       return;
     }
     const isIdle = pet.classList.contains('pet--idle');
@@ -273,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('click', () => {
     clearTimeout(timeout);
+    if (isSleepBlocked) return;
     wakeUp();
     playClickSound();
     boostMood(MOOD_CLICK_BOOST);
@@ -290,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.food-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       clearTimeout(timeout);
+      if (isSleepBlocked) return;
       wakeUp();
       hunger = 0;
       updateHungerBar();
@@ -313,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('mousedown', () => {
     clearTimeout(timeout);
+    if (isSleepBlocked) return;
     if (pet.classList.contains('pet--eating')) return;
     wakeUp();
     startPurrSound();
@@ -378,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
   playBtn.addEventListener('click', () => {
     clearTimeout(playTimeout);
     if (playBtn.disabled) return;
+    if (isSleepBlocked) return;
     if (energy < 20) wakeUp();
     energy = Math.max(0, energy - 15);
     updateSleepBar();

@@ -221,6 +221,7 @@ body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+.food-btn:disabled,
 .play-btn:disabled {
   opacity: 0.4;
   pointer-events: none;
@@ -301,6 +302,15 @@ body {
 @keyframes floatCard {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+
+.sleep-timer {
+  font-size: 0.75rem;
+  color: #A0C4E8;
+  margin-top: 0.75rem;
+  min-height: 1.1em;
+  font-weight: 300;
+  letter-spacing: 0.04em;
 }
 
 @keyframes bounce {

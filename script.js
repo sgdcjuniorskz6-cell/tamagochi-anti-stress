@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let hunger = 0;
   let energy = 100;
   let timeout;
+  let playTimeout;
   let moodInterval;
   let hungerInterval;
   let energyInterval;
@@ -375,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   playBtn.addEventListener('click', () => {
-    clearTimeout(timeout);
+    clearTimeout(playTimeout);
     if (playBtn.disabled) return;
     if (energy < 20) wakeUp();
     energy = Math.max(0, energy - 15);
@@ -388,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
     playThrowSound();
     ball.classList.add('ball--flying');
 
-    timeout = setTimeout(() => {
+    playTimeout = setTimeout(() => {
       ball.classList.remove('ball--flying');
       const caught = Math.random() < 0.7;
 
@@ -402,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         playMissSound();
       }
 
-      timeout = setTimeout(resetAfterThrow, 1200);
+      playTimeout = setTimeout(resetAfterThrow, 1200);
     }, 500);
   });
 });

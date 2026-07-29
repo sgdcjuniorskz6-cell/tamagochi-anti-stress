@@ -462,10 +462,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameBtns = document.querySelectorAll('.game-btn');
   let isGameActive = false;
   let gameTimer = null;
+  let gameIntervals = [];
 
   const stopGame = () => {
     isGameActive = false;
     clearTimeout(gameTimer);
+    gameIntervals.forEach(clearInterval);
+    gameIntervals = [];
     gameArena.innerHTML = '';
     gameArena.classList.remove('game-arena--active');
     gameBtns.forEach(b => b.disabled = false);
@@ -499,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const startBubbles = () => {
     gameArena.classList.add('game-arena--active');
     gameBtns.forEach(b => b.disabled = true);
-    gameArena.innerHTML = '<div class="game-hud">🫧 Лопай пузырьки! <span class="game-score">0</span></div>';
+    gameArena.innerHTML = '<div class="game-hud"><span>🫧 Лопай пузырьки!</span><span class="game-score">0</span><button class="game-close">✕</button></div>';
     let score = 0;
     const maxBubbles = 8;
     let spawnInterval;
@@ -534,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (let i = 0; i < 5; i++) spawnBubble();
     spawnInterval = setInterval(spawnBubble, 1000);
+    gameIntervals.push(spawnInterval);
 
     gameTimer = setTimeout(() => {
       clearInterval(spawnInterval);
@@ -577,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
       opts.sort(() => Math.random() - 0.5);
 
       gameArena.innerHTML = `
-        <div class="game-hud">🔢 Вопрос ${qIndex+1}/${total}</div>
+        <div class="game-hud"><span>🔢 Вопрос ${qIndex+1}/${total}</span><button class="game-close">✕</button></div>
         <div class="math-question">${a} ${op} ${b} = ?</div>
         <div class="math-options">
           ${opts.map(o => `<button class="math-btn">${o}</button>`).join('')}
@@ -606,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const startCatch = () => {
     gameArena.classList.add('game-arena--active');
     gameBtns.forEach(b => b.disabled = true);
-    gameArena.innerHTML = '<div class="game-hud">🍎 Лови еду! <span class="game-score">0</span></div>';
+    gameArena.innerHTML = '<div class="game-hud"><span>🍎 Лови еду!</span><span class="game-score">0</span><button class="game-close">✕</button></div>';
     let score = 0;
     let speed = 2200;
     let spawnInterval;
@@ -641,6 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
       spawnFood();
       speed = Math.max(600, speed - 80);
     }, 1000);
+    gameIntervals.push(spawnInterval);
 
     gameTimer = setTimeout(() => {
       clearInterval(spawnInterval);
@@ -665,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const render = () => {
       gameArena.innerHTML = `
-        <div class="game-hud">🃏 Найди пары! <span class="memory-matches">${matched}</span>/8</div>
+        <div class="game-hud"><span>🃏 Найди пары!</span><span class="memory-matches">${matched}/8</span><button class="game-close">✕</button></div>
         <div class="memory-grid">
           ${cards.map((emoji, i) => `
             <div class="memory-card" data-i="${i}">
@@ -717,6 +722,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     render();
   };
+
+  gameArena.addEventListener('click', (e) => {
+    if (e.target.classList.contains('game-close')) {
+      clearTimeout(gameTimer);
+      stopGame();
+    }
+  });
 
   gameBtns.forEach(btn => {
     btn.addEventListener('click', () => {

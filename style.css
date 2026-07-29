@@ -374,6 +374,22 @@ body {
   align-items: center;
 }
 
+.game-close {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity var(--transition-speed) ease;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.game-close:hover {
+  opacity: 1;
+  background: rgba(0,0,0,0.05);
+}
+
 .game-score {
   font-weight: 600;
   color: #A0C4E8;

@@ -377,7 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
   playBtn.addEventListener('click', () => {
     clearTimeout(timeout);
     if (playBtn.disabled) return;
-    wakeUp();
+    if (energy < 10) wakeUp();
+    energy = Math.max(0, energy - 15);
+    updateSleepBar();
     playBtn.disabled = true;
     pet.classList.remove('pet--idle', 'pet--happy', 'pet--eating', 'pet--purring');
 

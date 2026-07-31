@@ -53,6 +53,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const loadProgress = () => {
+    const saved = storage.get('save', null);
+    if (saved && saved.v === 1 && typeof saved.mood === 'number') {
+      const elapsed = Math.max(0, (Date.now() - saved.t) / 1000);
+      const capped = Math.min(elapsed, 1800);
+      mood = Math.max(MOOD_MIN, saved.mood - Math.floor(capped / 5));
+      hunger = Math.min(100, saved.hunger + Math.floor(capped / 6));
+      energy = Math.max(0, saved.energy - Math.floor(capped / 10));
+    }
+  };
+  const saveProgress = () => {
+    storage.set('save', { v: 1, t: Date.now(), mood, hunger, energy });
+  };
+  loadProgress();
+
   const themeBtn = document.getElementById('theme-btn');
   const applyTheme = (theme) => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -98,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const incrementStat = (key) => {
     stats[key] = (stats[key] || 0) + 1;
     storage.set('stats', stats);
+    checkAchievements();
   };
   const renderStats = () => {
     Object.keys(statsEls).forEach(k => {
@@ -114,6 +130,73 @@ document.addEventListener('DOMContentLoaded', () => {
   statsPanel.addEventListener('click', (e) => {
     if (e.target === statsPanel) statsPanel.classList.remove('stats-panel--open');
   });
+
+  const ACHIEVEMENTS = [
+    { id: 'click10', emoji: '👆', title: 'Первые клики', desc: '10 кликов по питомцу', check: s => s.clicks >= 10 },
+    { id: 'click100', emoji: '🌟', title: 'Орлиный палец', desc: '100 кликов по питомцу', check: s => s.clicks >= 100 },
+    { id: 'feed1', emoji: '🍎', title: 'Первый обед', desc: 'Накормить питомца 1 раз', check: s => s.feeds >= 1 },
+    { id: 'feed25', emoji: '🍰', title: 'Шеф-повар', desc: 'Накормить питомца 25 раз', check: s => s.feeds >= 25 },
+    { id: 'pet10', emoji: '🤗', title: 'Ласковый хозяин', desc: '10 поглаживаний', check: s => s.pets >= 10 },
+    { id: 'play5', emoji: '⚽', title: 'Игрок', desc: '5 игр в мяч', check: s => s.plays >= 5 },
+    { id: 'games3', emoji: '🎮', title: 'Геймер', desc: 'Сыграть 3 мини-игры', check: s => s.games >= 3 },
+    { id: 'sleep1', emoji: '😴', title: 'Крепкий сон', desc: 'Проснуться после сна', check: s => s.sleeps >= 1 },
+    { id: 'mood100', emoji: '💖', title: 'Счастливчик', desc: 'Достичь настроения 100', check: (s, ctx) => ctx.mood >= 100 }
+  ];
+  let achievements = storage.get('achievements', []);
+  const achvPanel = document.getElementById('achv-panel');
+  const achvBadge = document.getElementById('achv-badge');
+  const updateAchievementBadge = () => {
+    achvBadge.textContent = achievements.length + '/' + ACHIEVEMENTS.length;
+    achvBadge.hidden = achievements.length === 0;
+  };
+  const showAchievementToast = (a) => {
+    const toast = document.createElement('div');
+    toast.className = 'achievement-toast';
+    toast.innerHTML = `<span>${a.emoji}</span><div><strong>Достижение!</strong>${a.title} — ${a.desc}</div>`;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('achievement-toast--show'));
+    setTimeout(() => {
+      toast.classList.remove('achievement-toast--show');
+      setTimeout(() => toast.remove(), 450);
+    }, 2500);
+  };
+  const checkAchievements = () => {
+    const ctx = { mood };
+    let unlockedAny = false;
+    ACHIEVEMENTS.forEach(a => {
+      if (achievements.includes(a.id)) return;
+      if (a.check(stats, ctx)) {
+        achievements.push(a.id);
+        storage.set('achievements', achievements);
+        unlockedAny = true;
+        showAchievementToast(a);
+      }
+    });
+    if (unlockedAny) {
+      updateAchievementBadge();
+      boostMood(5);
+    }
+  };
+  const renderAchievements = () => {
+    document.getElementById('achv-list').innerHTML = ACHIEVEMENTS.map(a => {
+      const unlocked = achievements.includes(a.id);
+      return `<div class="achievement-item${unlocked ? '' : ' achievement-item--locked'}">
+        <span class="achv-emoji">${a.emoji}</span>
+        <div><strong>${a.title}</strong><br><span class="achv-desc">${a.desc}</span></div>
+        <span class="achv-state">${unlocked ? '✅' : '🔒'}</span>
+      </div>`;
+    }).join('');
+  };
+  document.getElementById('achv-btn').addEventListener('click', () => {
+    if (isGameActive) return;
+    renderAchievements();
+    achvPanel.classList.add('stats-panel--open');
+  });
+  document.getElementById('achv-close').addEventListener('click', () => achvPanel.classList.remove('stats-panel--open'));
+  achvPanel.addEventListener('click', (e) => {
+    if (e.target === achvPanel) achvPanel.classList.remove('stats-panel--open');
+  });
+  updateAchievementBadge();
 
   const getAudioContext = () => {
     if (!audioCtx) {
@@ -325,6 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
     energy = 100;
     updateSleepBar();
     incrementStat('sleeps');
+    saveProgress();
 
     document.getElementById('sleep-timer').textContent = '';
     pet.classList.remove('pet--sleeping');
@@ -359,6 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
     mood = Math.min(MOOD_MAX, mood + amount);
     applyMood();
     startMoodDecay();
+    saveProgress();
+    checkAchievements();
   };
 
   const startMoodDecay = () => {
@@ -516,6 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSleepBar();
     hunger = Math.min(100, hunger + 10);
     updateHungerBar();
+    saveProgress();
     playBtn.disabled = true;
     pet.classList.remove('pet--idle', 'pet--happy', 'pet--eating', 'pet--purring');
 
@@ -546,14 +633,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let isGameActive = false;
   let gameTimer = null;
   let gameIntervals = [];
+  let currentGameCleanup = null;
 
   const stopGame = () => {
     isGameActive = false;
     clearTimeout(gameTimer);
+    if (currentGameCleanup) {
+      currentGameCleanup();
+      currentGameCleanup = null;
+    }
     gameIntervals.forEach(clearInterval);
     gameIntervals = [];
     gameArena.innerHTML = '';
-    gameArena.classList.remove('game-arena--active');
+    gameArena.classList.remove('game-arena--active', 'game-arena--tall');
     gameBtns.forEach(b => b.disabled = false);
   };
 
@@ -741,6 +833,195 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 15000);
   };
 
+  // === SNAKE ===
+  const startSnake = () => {
+    gameArena.classList.add('game-arena--active', 'game-arena--tall');
+    gameBtns.forEach(b => b.disabled = true);
+    const size = 12;
+    const cell = Math.floor(220 / size);
+    let snake = [{ x: 5, y: 5 }, { x: 4, y: 5 }, { x: 3, y: 5 }];
+    let dir = { x: 1, y: 0 };
+    let nextDir = dir;
+    let food = null;
+    let score = 0;
+    let alive = true;
+    let interval;
+    const startTime = Date.now();
+    const DURATION = 20000;
+
+    gameArena.innerHTML = `
+      <div class="game-hud"><span>🐍 Змейка!</span><span class="game-score">0</span><button class="game-close">✕</button></div>
+      <div class="snake-grid" style="--cols:${size};--cells:${cell}px"></div>
+      <div class="snake-controls">
+        <button class="snake-btn" data-dir="up">⬆</button>
+        <button class="snake-btn" data-dir="left">⬅</button>
+        <button class="snake-btn" data-dir="right">➡</button>
+        <button class="snake-btn" data-dir="down">⬇</button>
+      </div>
+    `;
+
+    const gridEl = gameArena.querySelector('.snake-grid');
+    const render = () => {
+      gridEl.innerHTML = '';
+      const f = document.createElement('div');
+      f.className = 'snake-cell snake-cell--food';
+      f.style.gridArea = `${food.y + 1} / ${food.x + 1}`;
+      gridEl.appendChild(f);
+      snake.forEach((seg, i) => {
+        const c = document.createElement('div');
+        c.className = 'snake-cell' + (i === 0 ? ' snake-cell--head' : '');
+        c.style.gridArea = `${seg.y + 1} / ${seg.x + 1}`;
+        gridEl.appendChild(c);
+      });
+    };
+
+    const spawnFood = () => {
+      const cells = [];
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          if (!snake.some(s => s.x === x && s.y === y)) cells.push({ x, y });
+        }
+      }
+      if (!cells.length) { endGame(); return; }
+      food = cells[Math.floor(Math.random() * cells.length)];
+    };
+
+    const endGame = () => {
+      if (!alive) return;
+      alive = false;
+      clearInterval(interval);
+      const boost = Math.min(30, Math.floor(score / 2));
+      boostMood(boost);
+      playWinSound();
+      gameArena.innerHTML = `<div class="game-result">🐍 ${score} очков! Настроение +${boost}</div>`;
+      setTimeout(stopGame, 2000);
+    };
+
+    const step = () => {
+      dir = nextDir;
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      if (head.x < 0 || head.x >= size || head.y < 0 || head.y >= size || snake.some(s => s.x === head.x && s.y === head.y)) {
+        endGame();
+        return;
+      }
+      snake.unshift(head);
+      if (food && head.x === food.x && head.y === food.y) {
+        score += 10;
+        playCorrectSound();
+        gameArena.querySelector('.game-score').textContent = score;
+        spawnFood();
+      } else {
+        snake.pop();
+      }
+      render();
+      if (Date.now() - startTime >= DURATION) endGame();
+    };
+
+    const setDir = (d) => {
+      if (!alive) return;
+      if (d === 'up' && dir.y !== 1) nextDir = { x: 0, y: -1 };
+      if (d === 'down' && dir.y !== -1) nextDir = { x: 0, y: 1 };
+      if (d === 'left' && dir.x !== 1) nextDir = { x: -1, y: 0 };
+      if (d === 'right' && dir.x !== -1) nextDir = { x: 1, y: 0 };
+    };
+    const onKey = (e) => {
+      const k = e.key.replace('Arrow', '').toLowerCase();
+      if (['up', 'down', 'left', 'right'].includes(k)) setDir(k);
+    };
+    window.addEventListener('keydown', onKey);
+    currentGameCleanup = () => window.removeEventListener('keydown', onKey);
+
+    gameArena.querySelectorAll('.snake-btn').forEach(b => b.addEventListener('click', () => setDir(b.dataset.dir)));
+    spawnFood();
+    render();
+    interval = setInterval(step, 150);
+    gameIntervals.push(interval);
+  };
+
+  // === PONG ===
+  const startPong = () => {
+    gameArena.classList.add('game-arena--active', 'game-arena--tall');
+    gameBtns.forEach(b => b.disabled = true);
+    const W = 300;
+    const H = 230;
+    let score = 0;
+    let lives = 3;
+    let paddle = { x: W / 2 - 30, y: H - 20, w: 60, h: 10 };
+    let ball = { x: W / 2, y: 30, vx: (Math.random() < 0.5 ? -1 : 1) * 2, vy: 2, r: 6 };
+    let raf;
+    let last = performance.now();
+    let running = true;
+
+    gameArena.innerHTML = `
+      <div class="game-hud"><span>🏓 Пинг-понг!</span><span class="game-score">0</span><button class="game-close">✕</button></div>
+      <canvas class="pong-canvas" width="${W}" height="${H}"></canvas>
+    `;
+
+    const canvas = gameArena.querySelector('.pong-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const movePaddle = (clientX) => {
+      const rect = canvas.getBoundingClientRect();
+      paddle.x = clientX - rect.left - paddle.w / 2;
+      paddle.x = Math.max(0, Math.min(W - paddle.w, paddle.x));
+    };
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      movePaddle(e.touches[0].clientX);
+    }, { passive: false });
+    canvas.addEventListener('pointermove', (e) => movePaddle(e.clientX));
+
+    const loop = (now) => {
+      if (!running) return;
+      const dt = Math.min(50, now - last);
+      last = now;
+      const k = dt / 16.67;
+      ball.x += ball.vx * k;
+      ball.y += ball.vy * k;
+      if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx = -ball.vx; }
+      if (ball.x + ball.r > W) { ball.x = W - ball.r; ball.vx = -ball.vx; }
+      if (ball.y - ball.r < 0) { ball.y = ball.r; ball.vy = -ball.vy; }
+      if (ball.vy > 0 && ball.y + ball.r >= paddle.y && ball.y + ball.r <= paddle.y + paddle.h && ball.x >= paddle.x && ball.x <= paddle.x + paddle.w) {
+        ball.vy = -ball.vy;
+        score++;
+        playPopSound();
+        gameArena.querySelector('.game-score').textContent = score;
+        const sp = Math.hypot(ball.vx, ball.vy);
+        ball.vx *= (sp + 0.25) / sp;
+        ball.vy *= (sp + 0.25) / sp;
+      }
+      if (ball.y - ball.r > H) {
+        lives--;
+        if (lives <= 0) { endPong(); return; }
+        ball = { x: W / 2, y: 30, vx: (Math.random() < 0.5 ? -1 : 1) * 2, vy: 2, r: 6 };
+      }
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#FFB6C1';
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#A0C4E8';
+      ctx.fill();
+      ctx.fillStyle = '#B8A9C9';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('❤️'.repeat(lives), 8, 16);
+      raf = requestAnimationFrame(loop);
+    };
+
+    const endPong = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+      const boost = Math.min(30, Math.floor(score / 3));
+      boostMood(boost);
+      playWinSound();
+      gameArena.innerHTML = `<div class="game-result">🏓 ${score} отбиваний! Настроение +${boost}</div>`;
+      setTimeout(stopGame, 2000);
+    };
+
+    currentGameCleanup = () => { running = false; cancelAnimationFrame(raf); };
+    raf = requestAnimationFrame(loop);
+  };
+
   gameArena.addEventListener('click', (e) => {
     if (e.target.classList.contains('game-close')) {
       clearTimeout(gameTimer);
@@ -758,6 +1039,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (game === 'bubbles') startBubbles();
       else if (game === 'math') startMath();
       else if (game === 'catch') startCatch();
+      else if (game === 'snake') startSnake();
+      else if (game === 'pong') startPong();
     });
   });
 
@@ -767,4 +1050,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const petCard = document.getElementById('pet-card');
   petCard.classList.add('pet-enter');
   petCard.addEventListener('animationend', () => petCard.classList.remove('pet-enter'), { once: true });
+
+  setInterval(saveProgress, 10000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveProgress();
+  });
 });

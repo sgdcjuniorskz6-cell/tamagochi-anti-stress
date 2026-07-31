@@ -11,6 +11,7 @@
     <div class="top-bar">
       <button class="icon-btn" id="theme-btn" title="Тема">🌙</button>
       <button class="icon-btn" id="stats-btn" title="Статистика">📊</button>
+      <button class="icon-btn" id="achv-btn" title="Достижения">🏆<span class="achievement-badge" id="achv-badge" hidden></span></button>
     </div>
     <h1 class="title">Твой питомец</h1>
     <div class="pet-card pet-card--float" id="pet-card">
@@ -53,6 +54,8 @@
         <button class="game-btn" data-game="bubbles" title="Пузырьки">🫧</button>
         <button class="game-btn" data-game="math" title="Математика">🔢</button>
         <button class="game-btn" data-game="catch" title="Поймай еду">🍎</button>
+        <button class="game-btn" data-game="snake" title="Змейка">🐍</button>
+        <button class="game-btn" data-game="pong" title="Пинг-понг">🏓</button>
       </div>
       <div class="game-arena" id="game-arena"></div>
     </div>
@@ -69,6 +72,13 @@
       <div class="stat-row"><span>Игр в мяч</span><span id="stat-plays">0</span></div>
       <div class="stat-row"><span>Мини-игр сыграно</span><span id="stat-games">0</span></div>
       <div class="stat-row"><span>Пробуждений от сна</span><span id="stat-sleeps">0</span></div>
+    </div>
+  </div>
+  <div class="stats-panel" id="achv-panel">
+    <div class="stats-content">
+      <button class="game-close" id="achv-close">✕</button>
+      <h2 class="stats-title">Достижения</h2>
+      <div class="achievement-list" id="achv-list"></div>
     </div>
   </div>
   <script src="script.js"></script>

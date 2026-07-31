@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const FULL_EMOJI = '😋';
   const PURR_EMOJI = '☺️';
   const SAD_EMOJI = '🥺';
-  const NEUTRAL_EMOJI = '🐣';
+  let petEmoji = '🐣';
   const ANIMATION_DURATION = 400;
   const FEED_DURATION = 600;
   const FULL_DURATION = 2000;
@@ -36,6 +36,84 @@ document.addEventListener('DOMContentLoaded', () => {
   let audioCtx = null;
   let purrNodes = null;
   let ambientNodes = null;
+
+  const storage = {
+    get(key, fallback) {
+      try {
+        const v = localStorage.getItem('tg_' + key);
+        return v === null ? fallback : JSON.parse(v);
+      } catch (e) {
+        return fallback;
+      }
+    },
+    set(key, value) {
+      try {
+        localStorage.setItem('tg_' + key, JSON.stringify(value));
+      } catch (e) {}
+    }
+  };
+
+  const themeBtn = document.getElementById('theme-btn');
+  const applyTheme = (theme) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  };
+  let theme = storage.get('theme', 'light');
+  applyTheme(theme);
+  themeBtn.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    storage.set('theme', theme);
+    applyTheme(theme);
+  });
+
+  const petOptions = document.querySelectorAll('.pet-option');
+  const PETS = ['🐣', '🐱', '🐶', '🐰', '🐼'];
+  petEmoji = storage.get('pet', '🐣');
+  const selectPet = (emoji) => {
+    if (!PETS.includes(emoji)) return;
+    petEmoji = emoji;
+    storage.set('pet', emoji);
+    petOptions.forEach(o => o.classList.toggle('pet-option--active', o.dataset.pet === emoji));
+    clearTimeout(timeout);
+    pet.classList.remove('pet--happy', 'pet--eating', 'pet--purring', 'pet--catch');
+    pet.classList.add('pet--idle');
+    pet.textContent = emoji;
+  };
+  petOptions.forEach(o => o.addEventListener('click', () => {
+    if (isSleepBlocked || isGameActive) return;
+    selectPet(o.dataset.pet);
+    playClickSound();
+  }));
+  selectPet(petEmoji);
+
+  const statsEls = {
+    clicks: document.getElementById('stat-clicks'),
+    feeds: document.getElementById('stat-feeds'),
+    pets: document.getElementById('stat-pets'),
+    plays: document.getElementById('stat-plays'),
+    games: document.getElementById('stat-games'),
+    sleeps: document.getElementById('stat-sleeps')
+  };
+  let stats = storage.get('stats', {});
+  const incrementStat = (key) => {
+    stats[key] = (stats[key] || 0) + 1;
+    storage.set('stats', stats);
+  };
+  const renderStats = () => {
+    Object.keys(statsEls).forEach(k => {
+      statsEls[k].textContent = stats[k] || 0;
+    });
+  };
+  const statsPanel = document.getElementById('stats-panel');
+  document.getElementById('stats-btn').addEventListener('click', () => {
+    if (isGameActive) return;
+    renderStats();
+    statsPanel.classList.add('stats-panel--open');
+  });
+  document.getElementById('stats-close').addEventListener('click', () => statsPanel.classList.remove('stats-panel--open'));
+  statsPanel.addEventListener('click', (e) => {
+    if (e.target === statsPanel) statsPanel.classList.remove('stats-panel--open');
+  });
 
   const getAudioContext = () => {
     if (!audioCtx) {
@@ -181,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const getIdleEmoji = () => {
     if (mood > 70) return HAPPY_EMOJI;
-    if (mood > 30) return NEUTRAL_EMOJI;
+    if (mood > 30) return petEmoji;
     return SAD_EMOJI;
   };
 
@@ -246,6 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isSleepBlocked = false;
     energy = 100;
     updateSleepBar();
+    incrementStat('sleeps');
 
     document.getElementById('sleep-timer').textContent = '';
     pet.classList.remove('pet--sleeping');
@@ -320,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
   pet.addEventListener('click', () => {
     clearTimeout(timeout);
     if (isSleepBlocked || isGameActive) return;
+    incrementStat('clicks');
     wakeUp();
     playClickSound();
     boostMood(MOOD_CLICK_BOOST);
@@ -338,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       clearTimeout(timeout);
       if (isSleepBlocked || isGameActive) return;
+      incrementStat('feeds');
       wakeUp();
       hunger = 0;
       updateHungerBar();
@@ -363,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(timeout);
     if (isSleepBlocked || isGameActive) return;
     if (pet.classList.contains('pet--eating')) return;
+    incrementStat('pets');
     wakeUp();
     startPurrSound();
     boostMood(MOOD_PET_BOOST);
@@ -429,6 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (playBtn.disabled) return;
     if (isSleepBlocked || isGameActive) return;
     if (energy < 20) wakeUp();
+    incrementStat('plays');
     energy = Math.max(0, energy - 15);
     updateSleepBar();
     hunger = Math.min(100, hunger + 10);
@@ -670,10 +753,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isGameActive || isSleepBlocked) return;
       stopGame();
       isGameActive = true;
+      incrementStat('games');
       const game = btn.dataset.game;
       if (game === 'bubbles') startBubbles();
       else if (game === 'math') startMath();
       else if (game === 'catch') startCatch();
     });
   });
+
+  requestAnimationFrame(() => {
+    document.body.classList.add('page-loaded');
+  });
+  const petCard = document.getElementById('pet-card');
+  petCard.classList.add('pet-enter');
+  petCard.addEventListener('animationend', () => petCard.classList.remove('pet-enter'), { once: true });
 });

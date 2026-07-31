@@ -501,6 +501,21 @@ body {
   justify-content: center;
 }
 
+.coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-solid);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
 .food-btn {
   width: 56px;
   height: 56px;
@@ -512,8 +527,35 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.food-price {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: #FFD54F;
+  color: #5D4037;
+  font-size: 0.55rem;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 1px 5px;
+  pointer-events: none;
+  line-height: 1.2;
+}
+
+.food-btn--poor {
+  animation: poorShake 0.4s ease;
+  border-color: #E57373 !important;
+}
+
+@keyframes poorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
 }
 
 .food-btn:hover {

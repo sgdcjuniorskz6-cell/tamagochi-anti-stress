@@ -131,6 +131,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === statsPanel) statsPanel.classList.remove('stats-panel--open');
   });
 
+  const coinsEl = document.getElementById('coins');
+  let coins = storage.get('coins', 15);
+  const updateCoins = () => {
+    coinsEl.textContent = '🪙 ' + coins;
+  };
+  const awardCoins = (amount) => {
+    coins += amount;
+    storage.set('coins', coins);
+    updateCoins();
+    checkAchievements();
+  };
+  updateCoins();
+
   const ACHIEVEMENTS = [
     { id: 'click10', emoji: '👆', title: 'Первые клики', desc: '10 кликов по питомцу', check: s => s.clicks >= 10 },
     { id: 'click100', emoji: '🌟', title: 'Орлиный палец', desc: '100 кликов по питомцу', check: s => s.clicks >= 100 },
@@ -140,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { id: 'play5', emoji: '⚽', title: 'Игрок', desc: '5 игр в мяч', check: s => s.plays >= 5 },
     { id: 'games3', emoji: '🎮', title: 'Геймер', desc: 'Сыграть 3 мини-игры', check: s => s.games >= 3 },
     { id: 'sleep1', emoji: '😴', title: 'Крепкий сон', desc: 'Проснуться после сна', check: s => s.sleeps >= 1 },
+    { id: 'coins50', emoji: '🪙', title: 'Копилка', desc: 'Накопить 50 монет', check: (s, ctx) => ctx.coins >= 50 },
     { id: 'mood100', emoji: '💖', title: 'Счастливчик', desc: 'Достичь настроения 100', check: (s, ctx) => ctx.mood >= 100 }
   ];
   let achievements = storage.get('achievements', []);
@@ -161,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2500);
   };
   const checkAchievements = () => {
-    const ctx = { mood };
+    const ctx = { mood, coins };
     let unlockedAny = false;
     ACHIEVEMENTS.forEach(a => {
       if (achievements.includes(a.id)) return;
@@ -501,9 +515,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.querySelectorAll('.food-btn').forEach(btn => {
+    const price = parseInt(btn.dataset.price, 10) || 0;
     btn.addEventListener('click', () => {
       clearTimeout(timeout);
       if (isSleepBlocked || isGameActive) return;
+      if (coins < price) {
+        btn.classList.add('food-btn--poor');
+        setTimeout(() => btn.classList.remove('food-btn--poor'), 450);
+        playWrongSound();
+        return;
+      }
+      coins -= price;
+      updateCoins();
       incrementStat('feeds');
       wakeUp();
       hunger = 0;
@@ -719,8 +742,9 @@ document.addEventListener('DOMContentLoaded', () => {
       gameArena.querySelectorAll('.bubble').forEach(el => el.remove());
       const boost = Math.min(30, score * 2);
       boostMood(boost);
+      awardCoins(score);
       playWinSound();
-      gameArena.innerHTML = `<div class="game-result">🫧 +${score} очков! Настроение +${boost}</div>`;
+      gameArena.innerHTML = `<div class="game-result">🫧 +${score} очков! Настроение +${boost} · 🪙 +${score}</div>`;
       setTimeout(stopGame, 2000);
     }, 15000);
   };
@@ -737,8 +761,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (qIndex >= total) {
         const boost = Math.max(0, Math.min(50, correct * 5 - (total - correct) * 2));
         boostMood(boost);
+        awardCoins(correct);
         playWinSound();
-        gameArena.innerHTML = `<div class="game-result">🔢 ${correct}/${total}. Настроение +${boost}</div>`;
+        gameArena.innerHTML = `<div class="game-result">🔢 ${correct}/${total}. Настроение +${boost} · 🪙 +${correct}</div>`;
         setTimeout(stopGame, 2000);
         return;
       }
@@ -827,8 +852,9 @@ document.addEventListener('DOMContentLoaded', () => {
       gameArena.querySelectorAll('.falling-food').forEach(el => el.remove());
       const boost = Math.min(30, score * 3);
       boostMood(boost);
+      awardCoins(score);
       playWinSound();
-      gameArena.innerHTML = `<div class="game-result">🍎 +${score} поймано! Настроение +${boost}</div>`;
+      gameArena.innerHTML = `<div class="game-result">🍎 +${score} поймано! Настроение +${boost} · 🪙 +${score}</div>`;
       setTimeout(stopGame, 2000);
     }, 15000);
   };
@@ -891,9 +917,11 @@ document.addEventListener('DOMContentLoaded', () => {
       alive = false;
       clearInterval(interval);
       const boost = Math.min(30, Math.floor(score / 2));
+      const coinReward = Math.floor(score / 2);
       boostMood(boost);
+      awardCoins(coinReward);
       playWinSound();
-      gameArena.innerHTML = `<div class="game-result">🐍 ${score} очков! Настроение +${boost}</div>`;
+      gameArena.innerHTML = `<div class="game-result">🐍 ${score} очков! Настроение +${boost} · 🪙 +${coinReward}</div>`;
       setTimeout(stopGame, 2000);
     };
 
@@ -1012,9 +1040,11 @@ document.addEventListener('DOMContentLoaded', () => {
       running = false;
       cancelAnimationFrame(raf);
       const boost = Math.min(30, Math.floor(score / 3));
+      const coinReward = Math.floor(score / 3);
       boostMood(boost);
+      awardCoins(coinReward);
       playWinSound();
-      gameArena.innerHTML = `<div class="game-result">🏓 ${score} отбиваний! Настроение +${boost}</div>`;
+      gameArena.innerHTML = `<div class="game-result">🏓 ${score} отбиваний! Настроение +${boost} · 🪙 +${coinReward}</div>`;
       setTimeout(stopGame, 2000);
     };
 

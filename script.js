@@ -227,6 +227,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     if (unlockedAny) {
+      updateAchievementBadge();
+      boostMood(5);
+    }
+  };
+  const renderAchievements = () => {
+    document.getElementById('achv-list').innerHTML = ACHIEVEMENTS.map(a => {
+      const unlocked = achievements.includes(a.id);
+      return `<div class="achievement-item${unlocked ? '' : ' achievement-item--locked'}">
+        <span class="achv-emoji">${a.emoji}</span>
+        <div><strong>${a.title}</strong><br><span class="achv-desc">${a.desc}</span></div>
+        <span class="achv-state">${unlocked ? '✅' : '🔒'}</span>
+      </div>`;
+    }).join('');
+  };
+  document.getElementById('achv-btn').addEventListener('click', () => {
+    if (isGameActive) return;
+    renderAchievements();
+    achvPanel.classList.add('stats-panel--open');
+  });
+  document.getElementById('achv-close').addEventListener('click', () => achvPanel.classList.remove('stats-panel--open'));
+  achvPanel.addEventListener('click', (e) => {
+    if (e.target === achvPanel) achvPanel.classList.remove('stats-panel--open');
+  });
   updateAchievementBadge();
 
   // ========== ACCESSORIES SHOP ==========
@@ -362,30 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
       location.reload();
     }
   });
-
-      boostMood(5);
-    }
-  };
-  const renderAchievements = () => {
-    document.getElementById('achv-list').innerHTML = ACHIEVEMENTS.map(a => {
-      const unlocked = achievements.includes(a.id);
-      return `<div class="achievement-item${unlocked ? '' : ' achievement-item--locked'}">
-        <span class="achv-emoji">${a.emoji}</span>
-        <div><strong>${a.title}</strong><br><span class="achv-desc">${a.desc}</span></div>
-        <span class="achv-state">${unlocked ? '✅' : '🔒'}</span>
-      </div>`;
-    }).join('');
-  };
-  document.getElementById('achv-btn').addEventListener('click', () => {
-    if (isGameActive) return;
-    renderAchievements();
-    achvPanel.classList.add('stats-panel--open');
-  });
-  document.getElementById('achv-close').addEventListener('click', () => achvPanel.classList.remove('stats-panel--open'));
-  achvPanel.addEventListener('click', (e) => {
-    if (e.target === achvPanel) achvPanel.classList.remove('stats-panel--open');
-  });
-  updateAchievementBadge();
 
   const getAudioContext = () => {
     if (!audioCtx) {

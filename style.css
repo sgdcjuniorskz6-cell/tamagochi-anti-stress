@@ -193,6 +193,67 @@ body {
   margin-left: auto;
 }
 
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--arena-bg);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.shop-emoji {
+  font-size: 1.5rem;
+}
+
+.shop-info {
+  flex: 1;
+  text-align: left;
+}
+
+.shop-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.shop-buy {
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: transform var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.shop-buy:hover {
+  transform: scale(1.05);
+  border-color: var(--sleep-color);
+}
+
+.shop-buy--poor {
+  animation: poorShake 0.4s ease;
+  border-color: #E57373 !important;
+}
+
+.shop-balance {
+  text-align: center;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--sleep-color);
+}
+
 .game-arena--tall {
   height: 310px;
 }
@@ -382,6 +443,7 @@ body {
 }
 
 .pet-card {
+  position: relative;
   background: var(--surface);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -418,6 +480,25 @@ body {
   user-select: none;
   -webkit-user-select: none;
   text-shadow: var(--pet-soft-shadow);
+}
+
+.accessory {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 1.8rem;
+  pointer-events: none;
+  z-index: 2;
+  animation: accessoryPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes accessoryPop {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.accessory[hidden] {
+  display: none;
 }
 
 .pet--idle {
@@ -595,14 +676,42 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.play-btn:hover {
+.walk-btn {
+  margin-top: 1rem;
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background: var(--surface-solid);
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.action-row .play-btn,
+.action-row .walk-btn {
+  margin-top: 1rem;
+}
+
+.play-btn:hover,
+.walk-btn:hover {
   transform: scale(1.05);
   border-color: #FFB6C1;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .food-btn:disabled,
-.play-btn:disabled {
+.play-btn:disabled,
+.walk-btn:disabled {
   opacity: 0.4;
   pointer-events: none;
 }
@@ -648,6 +757,20 @@ body {
 .pet--sleeping {
   animation: zzz 2s ease-in-out infinite;
   filter: grayscale(0.3);
+}
+
+.pet--walking {
+  animation: walkBob 500ms ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes walkBob {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(5deg);
+  }
 }
 
 @keyframes zzz {
@@ -931,6 +1054,14 @@ body {
     filter: none;
   }
 
+  .pet--walking {
+    animation: none;
+  }
+
+  .accessory {
+    animation: none;
+  }
+
   .pet-card {
     transition: none;
   }
@@ -966,6 +1097,11 @@ body {
   }
 
   .play-btn {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+
+  .walk-btn {
     font-size: 0.9rem;
     padding: 8px 16px;
   }

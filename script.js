@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let timeout;
   let playTimeout;
   let isSleepBlocked = false;
+  let isWalking = false;
   let sleepTimeout;
   let sleepCountdown;
   const SLEEP_DURATION = 15000;
@@ -83,6 +84,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const petOptions = document.querySelectorAll('.pet-option');
   const PETS = ['🐣', '🐱', '🐶', '🐰', '🐼'];
+  const EVOLUTION = {
+    '🐣': ['🐣', '🐥', '🐔'],
+    '🐱': ['🐱', '🐈'],
+    '🐶': ['🐶', '🐕'],
+    '🐰': ['🐰', '🐇'],
+    '🐼': ['🐼', '🐻']
+  };
+  const EVOLUTION_FEEDS = [10, 30];
+  const getStageIndex = () => {
+    const chain = EVOLUTION[petEmoji] || [petEmoji];
+    const feeds = storage.get('stats', {}).feeds || 0;
+    let idx = 0;
+    EVOLUTION_FEEDS.forEach((f, i) => { if (feeds >= f) idx = i + 1; });
+    return Math.min(idx, chain.length - 1);
+  };
+  const getStageEmoji = () => {
+    const chain = EVOLUTION[petEmoji] || [petEmoji];
+    return chain[getStageIndex()];
+  };
   petEmoji = storage.get('pet', '🐣');
   const selectPet = (emoji) => {
     if (!PETS.includes(emoji)) return;
@@ -92,14 +112,30 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(timeout);
     pet.classList.remove('pet--happy', 'pet--eating', 'pet--purring', 'pet--catch');
     pet.classList.add('pet--idle');
-    pet.textContent = emoji;
+    pet.textContent = getStageEmoji();
   };
   petOptions.forEach(o => o.addEventListener('click', () => {
-    if (isSleepBlocked || isGameActive) return;
+    if (isSleepBlocked || isGameActive || isWalking) return;
     selectPet(o.dataset.pet);
     playClickSound();
   }));
   selectPet(petEmoji);
+
+  const checkEvolution = () => {
+    const idx = getStageIndex();
+    const prevIdx = storage.get('stageIdx', 0);
+    if (idx > prevIdx) {
+      storage.set('stageIdx', idx);
+      const emoji = getStageEmoji();
+      if (pet.classList.contains('pet--idle')) {
+        pet.textContent = emoji;
+      }
+      showToast('⭐', 'Эволюция!', ` ${petEmoji} вырос до ${emoji}`);
+      playWinSound();
+      boostMood(5);
+    }
+  };
+  storage.set('stageIdx', getStageIndex());
 
   const statsEls = {
     clicks: document.getElementById('stat-clicks'),
@@ -107,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     pets: document.getElementById('stat-pets'),
     plays: document.getElementById('stat-plays'),
     games: document.getElementById('stat-games'),
-    sleeps: document.getElementById('stat-sleeps')
+    sleeps: document.getElementById('stat-sleeps'),
+    walks: document.getElementById('stat-walks')
   };
   let stats = storage.get('stats', {});
   const incrementStat = (key) => {
@@ -163,16 +200,19 @@ document.addEventListener('DOMContentLoaded', () => {
     achvBadge.textContent = achievements.length + '/' + ACHIEVEMENTS.length;
     achvBadge.hidden = achievements.length === 0;
   };
-  const showAchievementToast = (a) => {
+  const showToast = (emoji, title, desc) => {
     const toast = document.createElement('div');
     toast.className = 'achievement-toast';
-    toast.innerHTML = `<span>${a.emoji}</span><div><strong>Достижение!</strong>${a.title} — ${a.desc}</div>`;
+    toast.innerHTML = `<span>${emoji}</span><div><strong>${title}</strong>${desc}</div>`;
     document.body.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('achievement-toast--show'));
     setTimeout(() => {
       toast.classList.remove('achievement-toast--show');
       setTimeout(() => toast.remove(), 450);
     }, 2500);
+  };
+  const showAchievementToast = (a) => {
+    showToast(a.emoji, 'Достижение!', ` ${a.title} — ${a.desc}`);
   };
   const checkAchievements = () => {
     const ctx = { mood, coins };
@@ -187,7 +227,142 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     if (unlockedAny) {
-      updateAchievementBadge();
+  updateAchievementBadge();
+
+  // ========== ACCESSORIES SHOP ==========
+  const ACCESSORIES = [
+    { id: 'hat', emoji: '🎩', name: 'Шляпа', price: 15 },
+    { id: 'glasses', emoji: '👓', name: 'Очки', price: 20 },
+    { id: 'bow', emoji: '🎀', name: 'Бантик', price: 10 },
+    { id: 'crown', emoji: '👑', name: 'Корона', price: 40 }
+  ];
+  let ownedAccessories = storage.get('accessories', []);
+  let equippedAccessory = storage.get('equipped', null);
+  const accessoryEl = document.getElementById('accessory');
+  const shopPanel = document.getElementById('shop-panel');
+
+  const updateAccessory = () => {
+    if (equippedAccessory && ownedAccessories.includes(equippedAccessory)) {
+      const item = ACCESSORIES.find(a => a.id === equippedAccessory);
+      accessoryEl.textContent = item ? item.emoji : '';
+      accessoryEl.hidden = false;
+    } else {
+      accessoryEl.hidden = true;
+    }
+  };
+
+  const renderShop = () => {
+    document.getElementById('shop-balance').textContent = '🪙 ' + coins;
+    document.getElementById('shop-list').innerHTML = ACCESSORIES.map(item => {
+      const owned = ownedAccessories.includes(item.id);
+      const equipped = equippedAccessory === item.id;
+      return `<div class="shop-item" data-id="${item.id}">
+        <span class="shop-emoji">${item.emoji}</span>
+        <div class="shop-info"><strong>${item.name}</strong><br><span class="shop-desc">${owned ? 'Куплено' : '🪙' + item.price}</span></div>
+        <button class="shop-buy">${owned ? (equipped ? 'Надето' : 'Надеть') : 'Купить'}</button>
+      </div>`;
+    }).join('');
+  };
+
+  document.getElementById('shop-btn').addEventListener('click', () => {
+    if (isGameActive) return;
+    renderShop();
+    shopPanel.classList.add('stats-panel--open');
+  });
+  document.getElementById('shop-close').addEventListener('click', () => shopPanel.classList.remove('stats-panel--open'));
+  shopPanel.addEventListener('click', (e) => {
+    if (e.target === shopPanel) shopPanel.classList.remove('stats-panel--open');
+    const buyBtn = e.target.closest('.shop-buy');
+    if (!buyBtn) return;
+    const item = ACCESSORIES.find(a => a.id === buyBtn.closest('.shop-item').dataset.id);
+    if (!item) return;
+    if (!ownedAccessories.includes(item.id)) {
+      if (coins < item.price) {
+        buyBtn.classList.add('shop-buy--poor');
+        setTimeout(() => buyBtn.classList.remove('shop-buy--poor'), 450);
+        playWrongSound();
+        return;
+      }
+      coins -= item.price;
+      storage.set('coins', coins);
+      updateCoins();
+      ownedAccessories.push(item.id);
+      storage.set('accessories', ownedAccessories);
+      playCorrectSound();
+    }
+    equippedAccessory = equippedAccessory === item.id ? null : item.id;
+    storage.set('equipped', equippedAccessory);
+    updateAccessory();
+    renderShop();
+  });
+  updateAccessory();
+
+  // ========== DAILY REWARDS ==========
+  const dateKey = () => {
+    const d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  };
+  const checkDailyReward = () => {
+    const today = dateKey();
+    const saved = storage.get('daily', null);
+    if (saved && saved.date === today) return;
+    let streak = 1;
+    if (saved) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yKey = yesterday.getFullYear() + '-' + (yesterday.getMonth() + 1) + '-' + yesterday.getDate();
+      streak = saved.date === yKey ? saved.streak + 1 : 1;
+    }
+    const bonus = Math.min(streak, 7);
+    const reward = 5 + bonus;
+    storage.set('daily', { date: today, streak });
+    awardCoins(reward);
+    showToast('🎁', 'Ежедневная награда!', ` Серия: ${streak} · 🪙 +${reward}`);
+  };
+  checkDailyReward();
+
+  // ========== WALK ==========
+  const walkBtn = document.getElementById('walk-btn');
+  const WALK_DURATION = 4000;
+  const startWalk = () => {
+    if (isSleepBlocked || isGameActive || isWalking) return;
+    isWalking = true;
+    walkBtn.disabled = true;
+    clearTimeout(timeout);
+    clearTimeout(playTimeout);
+    pet.classList.remove('pet--idle', 'pet--happy', 'pet--eating', 'pet--purring');
+    pet.classList.add('pet--walking');
+    pet.textContent = '🐾';
+    playThrowSound();
+    incrementStat('walks');
+
+    setTimeout(() => {
+      pet.classList.remove('pet--walking');
+      isWalking = false;
+      walkBtn.disabled = false;
+      if (!isSleepBlocked) {
+        pet.classList.add('pet--idle');
+        pet.textContent = getStateEmoji();
+      }
+      if (Math.random() < 0.5) {
+        const found = 1 + Math.floor(Math.random() * 4);
+        awardCoins(found);
+        showToast('💎', 'Находка!', ` Питомец принёс 🪙 ${found}`);
+        playCorrectSound();
+      }
+    }, WALK_DURATION);
+  };
+  walkBtn.addEventListener('click', startWalk);
+
+  // ========== RESET ==========
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    if (isGameActive || isWalking) return;
+    if (confirm('Точно сбросить игру? Весь прогресс будет удалён.')) {
+      Object.keys(localStorage).forEach(k => { if (k.startsWith('tg_')) localStorage.removeItem(k); });
+      location.reload();
+    }
+  });
+
       boostMood(5);
     }
   };
@@ -356,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const getIdleEmoji = () => {
     if (mood > 70) return HAPPY_EMOJI;
-    if (mood > 30) return petEmoji;
+    if (mood > 30) return getStageEmoji();
     return SAD_EMOJI;
   };
 
@@ -399,6 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.food-btn').forEach(b => b.disabled = true);
     document.getElementById('play-btn').disabled = true;
+    document.getElementById('walk-btn').disabled = true;
 
     const timerEl = document.getElementById('sleep-timer');
     let remaining = SLEEP_DURATION / 1000;
@@ -431,6 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.food-btn').forEach(b => b.disabled = false);
     document.getElementById('play-btn').disabled = false;
+    document.getElementById('walk-btn').disabled = false;
   };
 
   const applyMood = () => {
@@ -498,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('click', () => {
     clearTimeout(timeout);
-    if (isSleepBlocked || isGameActive) return;
+    if (isSleepBlocked || isGameActive || isWalking) return;
     incrementStat('clicks');
     wakeUp();
     playClickSound();
@@ -518,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const price = parseInt(btn.dataset.price, 10) || 0;
     btn.addEventListener('click', () => {
       clearTimeout(timeout);
-      if (isSleepBlocked || isGameActive) return;
+      if (isSleepBlocked || isGameActive || isWalking) return;
       if (coins < price) {
         btn.classList.add('food-btn--poor');
         setTimeout(() => btn.classList.remove('food-btn--poor'), 450);
@@ -528,6 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
       coins -= price;
       updateCoins();
       incrementStat('feeds');
+      checkEvolution();
       wakeUp();
       hunger = 0;
       updateHungerBar();
@@ -551,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('mousedown', () => {
     clearTimeout(timeout);
-    if (isSleepBlocked || isGameActive) return;
+    if (isSleepBlocked || isGameActive || isWalking) return;
     if (pet.classList.contains('pet--eating')) return;
     incrementStat('pets');
     wakeUp();
@@ -618,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
   playBtn.addEventListener('click', () => {
     clearTimeout(playTimeout);
     if (playBtn.disabled) return;
-    if (isSleepBlocked || isGameActive) return;
+    if (isSleepBlocked || isGameActive || isWalking) return;
     if (energy < 20) wakeUp();
     incrementStat('plays');
     energy = Math.max(0, energy - 15);
@@ -1061,7 +1239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   gameBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      if (isGameActive || isSleepBlocked) return;
+      if (isGameActive || isSleepBlocked || isWalking) return;
       stopGame();
       isGameActive = true;
       incrementStat('games');

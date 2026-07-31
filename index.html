@@ -12,10 +12,13 @@
       <button class="icon-btn" id="theme-btn" title="Тема">🌙</button>
       <button class="icon-btn" id="stats-btn" title="Статистика">📊</button>
       <button class="icon-btn" id="achv-btn" title="Достижения">🏆<span class="achievement-badge" id="achv-badge" hidden></span></button>
+      <button class="icon-btn" id="shop-btn" title="Аксессуары">🎀</button>
+      <button class="icon-btn" id="reset-btn" title="Сбросить игру">🔄</button>
     </div>
     <h1 class="title">Твой питомец</h1>
     <div class="coins" id="coins">🪙 15</div>
     <div class="pet-card pet-card--float" id="pet-card">
+      <span class="accessory" id="accessory" hidden></span>
       <span class="pet" id="pet">🐣</span>
     </div>
     <div class="pet-select" id="pet-select">
@@ -60,7 +63,10 @@
       </div>
       <div class="game-arena" id="game-arena"></div>
     </div>
-    <button class="play-btn" id="play-btn">⚽ Бросить мяч</button>
+    <div class="action-row">
+      <button class="play-btn" id="play-btn">⚽ Бросить мяч</button>
+      <button class="walk-btn" id="walk-btn">🚶 Прогуляться</button>
+    </div>
     <div class="ball" id="ball">⚽</div>
   </div>
   <div class="stats-panel" id="stats-panel">
@@ -73,6 +79,15 @@
       <div class="stat-row"><span>Игр в мяч</span><span id="stat-plays">0</span></div>
       <div class="stat-row"><span>Мини-игр сыграно</span><span id="stat-games">0</span></div>
       <div class="stat-row"><span>Пробуждений от сна</span><span id="stat-sleeps">0</span></div>
+      <div class="stat-row"><span>Прогулок</span><span id="stat-walks">0</span></div>
+    </div>
+  </div>
+  <div class="stats-panel" id="shop-panel">
+    <div class="stats-content">
+      <button class="game-close" id="shop-close">✕</button>
+      <h2 class="stats-title">Аксессуары</h2>
+      <p class="shop-balance" id="shop-balance">🪙 15</p>
+      <div class="shop-list" id="shop-list"></div>
     </div>
   </div>
   <div class="stats-panel" id="achv-panel">

@@ -658,72 +658,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 15000);
   };
 
-  // === MEMORY ===
-  const startMemory = () => {
-    gameArena.classList.add('game-arena--active');
-    gameBtns.forEach(b => b.disabled = true);
-    const emojis = ['🐶', '🐱', '🐰', '🐼', '🦊', '🐸', '🦄', '🐲'];
-    const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
-    let flipped = [];
-    let matched = 0;
-    let locked = false;
-
-    const render = () => {
-      gameArena.innerHTML = `
-        <div class="game-hud"><span>🃏 Найди пары!</span><span class="memory-matches">${matched}/8</span><button class="game-close">✕</button></div>
-        <div class="memory-grid">
-          ${cards.map((emoji, i) => `
-            <div class="memory-card" data-i="${i}">
-              <div class="memory-card-inner">
-                <div class="memory-front">?</div>
-                <div class="memory-back">${emoji}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-
-      gameArena.querySelectorAll('.memory-card').forEach(card => {
-        card.addEventListener('click', () => {
-          if (locked) return;
-          if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
-          card.classList.add('flipped');
-          flipped.push(card);
-          if (flipped.length === 2) {
-            locked = true;
-            const [a, b] = flipped;
-            const match = a !== b && a.dataset.i != null && b.dataset.i != null && cards[a.dataset.i] === cards[b.dataset.i];
-            if (match) {
-              matched++;
-              const mm = gameArena.querySelector('.memory-matches');
-              if (mm) mm.textContent = matched + '/8';
-              a.classList.add('matched');
-              b.classList.add('matched');
-              flipped = [];
-              locked = false;
-              playCorrectSound();
-              if (matched === 8) {
-                boostMood(30);
-                playWinSound();
-                gameArena.innerHTML = `<div class="game-result">🃏 Все пары найдены! Настроение +30</div>`;
-                setTimeout(stopGame, 2000);
-              }
-            } else {
-              playWrongSound();
-              setTimeout(() => {
-                if (a.parentNode) a.classList.remove('flipped');
-                if (b.parentNode) b.classList.remove('flipped');
-                flipped = [];
-                locked = false;
-              }, 700);
-            }
-          }
-        });
-      });
-    };
-    render();
-  };
-
   gameArena.addEventListener('click', (e) => {
     if (e.target.classList.contains('game-close')) {
       clearTimeout(gameTimer);
@@ -740,7 +674,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (game === 'bubbles') startBubbles();
       else if (game === 'math') startMath();
       else if (game === 'catch') startCatch();
-      else if (game === 'memory') startMemory();
     });
   });
 });

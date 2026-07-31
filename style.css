@@ -506,67 +506,6 @@ body {
   }
 }
 
-/* === MEMORY === */
-.memory-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding: 8px 12px;
-  max-width: 280px;
-  margin: 0 auto;
-}
-
-.memory-card {
-  aspect-ratio: 1;
-  perspective: 400px;
-  cursor: pointer;
-}
-
-.memory-card-inner {
-  width: 100%;
-  height: 100%;
-  transition: transform 0.4s ease;
-  transform-style: preserve-3d;
-  border-radius: 10px;
-}
-
-.memory-card.flipped .memory-card-inner {
-  transform: rotateY(180deg);
-}
-
-.memory-front, .memory-back {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  font-size: 1.4rem;
-}
-
-.memory-front {
-  background: #FFE4E1;
-  color: #B8A9C9;
-  font-size: 1rem;
-}
-
-.memory-back {
-  background: #E8F0FE;
-  transform: rotateY(180deg);
-}
-
-.memory-card.matched .memory-card-inner {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.memory-matches {
-  font-weight: 600;
-  color: #A0C4E8;
-}
-
 @keyframes bounce {
   0% {
     transform: translateY(0) scale(1);

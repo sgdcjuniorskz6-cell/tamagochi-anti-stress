@@ -1114,8 +1114,24 @@ body {
     font-size: 0.55rem;
   }
 
-  .ball {
+   .ball {
     font-size: 1.5rem;
+  }
+
+  .snake-grid {
+    max-width: 240px;
+    margin: 0 auto;
+  }
+
+  .snake-btn {
+    width: 56px;
+    height: 56px;
+    font-size: 1.4rem;
+  }
+
+  .snake-controls {
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(2, 56px);
   }
 }
 

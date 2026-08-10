@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     osc2.frequency.setValueAtTime(2200, now);
 
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.04, now + 1);
+    gain.gain.linearRampToValueAtTime(0.01, now + 1);
 
     osc1.connect(gain);
     osc2.connect(gain);
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyMood = () => {
     const isSleeping = energy < 20;
     updateMoodBar(mood);
-    if (mood > 70) {
+    if (mood > 70 && hunger <= 70) {
       startAmbient();
     } else {
       stopAmbient();
@@ -749,6 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pet.addEventListener('mouseup', stopPetting);
   pet.addEventListener('mouseleave', stopPetting);
+  document.addEventListener('mouseup', stopPetting);
 
   const ball = document.getElementById('ball');
   const playBtn = document.getElementById('play-btn');
@@ -1136,7 +1137,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('keydown', onKey);
     currentGameCleanup = () => window.removeEventListener('keydown', onKey);
 
-    gameArena.querySelectorAll('.snake-btn').forEach(b => b.addEventListener('click', () => setDir(b.dataset.dir)));
+    gameArena.querySelectorAll('.snake-btn').forEach(b => {
+      b.addEventListener('click', () => setDir(b.dataset.dir));
+      b.addEventListener('touchstart', (e) => { e.preventDefault(); setDir(b.dataset.dir); });
+    });
     spawnFood();
     render();
     interval = setInterval(step, 150);

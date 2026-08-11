@@ -484,12 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const gain = ctx.createGain();
 
     osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(1800, now);
+    osc1.frequency.setValueAtTime(160, now);
     osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(2200, now);
+    osc2.frequency.setValueAtTime(220, now);
 
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.01, now + 1);
+    gain.gain.linearRampToValueAtTime(0.003, now + 1);
 
     osc1.connect(gain);
     osc2.connect(gain);

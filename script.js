@@ -740,6 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const stopPetting = () => {
+    stopPurrSound();
     if (pet.classList.contains('pet--eating')) return;
     stopPurrSound();
     pet.classList.remove('pet--purring');

@@ -848,6 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gameArena.innerHTML = '';
     gameArena.classList.remove('game-arena--active', 'game-arena--tall');
     gameBtns.forEach(b => b.disabled = false);
+    applyMood();
   };
 
   const playPopSound = () => {
@@ -1243,6 +1244,7 @@ document.addEventListener('DOMContentLoaded', () => {
   gameBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       if (isGameActive || isSleepBlocked || isWalking) return;
+      stopAmbient();
       stopGame();
       isGameActive = true;
       incrementStat('games');
